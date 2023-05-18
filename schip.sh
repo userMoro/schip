@@ -53,8 +53,8 @@ repock=0
 chiptoolck=0
 submoduleck=0
 envck=0
-someappck=0
 appck=0
+spec_appck=0
 
 REQUIRED_PACKAGES=(
   git
@@ -115,7 +115,7 @@ function os_check(){
 
 function dep_check(){
 
-  #checking common required packkages
+  #checking common required packages
   if [[ "$1" == "all" || "$1" == "controller" ]]; then
     for package in "${REQUIRED_PACKAGES[@]}"; do
       if ! dpkg -s "$package" >/dev/null 2>&1; then
@@ -169,7 +169,7 @@ function repo_clone(){
 }
 
 function chiptool_check(){
-  if ! [ -d out ]; then
+  if [ -d out ]; then
     chiptoolck=1
   fi
 }
@@ -196,19 +196,13 @@ function submodule_check(){
 }
 
 function app_check(){
-  if [[ $1 == "all" ]]; then
-    for app in connectedhomeip/examples; do
-      if [[ -d $app/linux/out ]]; then
-        someappck=2
-      fi
-    done
-    if [[ -d connectedhomeip/examples/lighting-app/linux/out ]]; then
-      someappck=1
-    fi
-  else 
-    if [[ -d connectedhomeip/examples/$1/linux/out ]]; then
+  for app in connectedhomeip/examples; do
+    if [[ -d $app/linux/out ]]; then
       appck=1
     fi
+  done
+  if [[ -d $1/linux/out ]]; then
+    spec_appck=1
   fi
 }
 
@@ -255,31 +249,7 @@ function schip_help() { # implementazione della funzione schip -h
   text "" "blue" "|                                                                                                                                   |"
   text "" "blue" "| " "-n"
   
-  text "bold" "" "schip -u -s / --update --submodules                                                                                              " "-n"
-  text "" "blue" " |\n| " "-n"
-  text "italics" "" "check and update connectedhomeip's submodules (same for both controller and device)                                               " "-n"
-
-  text "" "blue" "| "
-  text "" "blue" "|                                                                                                                                   |"
-  text "" "blue" "| " "-n"
-  
-  text "bold" "" "schip -u -l -c / --update --libreries --controller                                                                               " "-n"
-  text "" "blue" " |\n| " "-n"
-  text "italics" "" "check and update dependencies for controller                                                                                      " "-n"
-
-  text "" "blue" "| "
-  text "" "blue" "|                                                                                                                                   |"
-  text "" "blue" "| " "-n"
-  
-  text "bold" "" "schip -u -l -d / --update --libreries --device                                                                                   " "-n"
-  text "" "blue" " |\n| " "-n"
-  text "italics" "" "check and update dependencies for device                                                                                          " "-n"
-
-  text "" "blue" "| "
-  text "" "blue" "|                                                                                                                                   |"
-  text "" "blue" "| " "-n"
-  
-  text "bold" "" "schip -u -a -c / --update --all --controller                                                                                     " "-n"
+  text "bold" "" "schip -u -c / --update --controller                                                                                     " "-n"
   text "" "blue" " |\n| " "-n"
   text "italics" "" "check and update prerequisites for controller                                                                                     " "-n"
 
@@ -287,7 +257,7 @@ function schip_help() { # implementazione della funzione schip -h
   text "" "blue" "|                                                                                                                                   |"
   text "" "blue" "| " "-n"
   
-  text "bold" "" "schip -u -a -d / --update --all --device                                                                                         " "-n"
+  text "bold" "" "schip -u -d / --update --device                                                                                         " "-n"
   text "" "blue" " |\n| " "-n"
   text "italics" "" "check and update prerequisites for device                                                                                         " "-n"
 
@@ -346,13 +316,12 @@ function schip_begin { # implementazione della funzione schip -b
   repo_check
   chiptool_check
   submodule_check
-  app_check "all"
-  app_check "lighting-app"
+  app_check 
 
   #checklist
   echo -e "\nTo use Matter to control a device running an example application, you need a functioning controller and device."
   text "bold" "" "\nThe prerequisite needed to build an example app (on Raspberry Pi device) and a controller (Linux) to use it are:\n"
-  text "bold" "" "The prerequisite needed to build an example app (on Raspberry Pi device) and a controller (Linux) to use it are:\n"
+  text "bold" "" "The prerequisite needed to build an example app (on Raspberry Pi device) and a controller (Linux) are:\n"
 
   text "italics" "" "- Ubuntu 20.04/22.04 LTS" "-n"
   if [[ $osck -eq 1 ]]; then
@@ -412,18 +381,18 @@ function schip_begin { # implementazione della funzione schip -b
   fi
   echo ""
 
-  text "italics" "" "- some executable example apps (for raspberry device) builded" "-n"
-  if [[ $someappck -eq 1 ]]; then
+  text "italics" "" "- Some executable example apps (for raspberry device) builded" "-n"
+  if [[ $appck -eq 2 ]]; then
     text "bold" "green" " ✓"
-  elif [[ $someappck -eq 2 ]]; then
+  elif [[ $appck -eq 1 ]]; then
     text "bold" "yellow" " ✓"
   else 
     text "bold" "red" " ✗"
   fi
   echo -e ""
 
-  text "italics" "" "- lighting-app example (for raspberry device) builded" "-n"
-  if [[ $someapp -eq 1 ]]; then
+  text "italics" "" "- Lighting-app example (for raspberry device) builded" "-n"
+  if [[ $appck -eq 2 ]]; then
     text "bold" "green" " ✓"
   else
     text "bold" "red" " ✗"
@@ -454,57 +423,38 @@ function schip_update_all { # implementazione della funzione schip -u -a -c
     text "" "green" "connectedhomeip folder found\n"
 
     #checking dependecies
-    dep_check $1
+    dep_check "all"
     some_missing=false
-    
-    #for device
-    if [[ $1 == "device" ]]; then
-      if [[ $depck -eq 2 || $depckR -eq 2 ]]; then
-        text "" "yellow" "some reqired dependencies are missing:"
-        some_missing=true
-      elif [[ $depck -eq 0 && $depckR -eq 0 ]]; then
-        text "" "red" "you are missing all the required dependencies!:"
-        some_missing=true
-      fi 
-      if [[ $some_missing == true ]]; then
-        for i in "${MISSING_REQUIRED[@]}"; do
-            text "" "" "-$i"
-        done
-        for i in "${MISSING_RASP[@]}"; do
-            text "" "" "-$i"
-        done
-        echo ""
-      fi
 
-    #for controller
-    elif [[ $1 == "controller" ]]; then
-      if [[ $depck -eq 2 ]]; then
-        text "" "yellow" "some dependencies are missing:"
-        some_missing=true
-      elif [[ $depck -eq 0 ]]; then
-        text "" "red" "you are missing all the required dependencies:"
-        some_missing=true
-      fi
-      if [[ $some_missing == true ]]; then
-        for i in "${MISSING_REQUIRED[@]}"; do
-            text "" "" "-$i"
-        done
-        echo ""
-      fi
+  
+    if [[ ( $1 == "device" && ( $depck -eq 2 || $depckR -eq 2 || $depckR -eq 0 ) ) || ( $1 == "controller" && $depck -eq 2 ) ]]; then
+      text "" "yellow" "some dependencies are missing:"
+      some_missing=true
+    elif [[ ( ( $1 == "controller" ) || ( $1 == "device" && $depckR -eq 0 ) ) && $depck -eq 0 ]]; then
+      text "" "red" "you are missing all the required dependencies:"
+      some_missing=true
     fi
-
-    if [[ $some_missing == false ]]; then
-      text "" "green" "all required dependencies already installed\n"
+    if [[ $some_missing == true ]]; then
+      for i in "${MISSING_REQUIRED[@]}"; do
+          text "" "" "-$i"
+      done
+      if [[ $1 == "device" ]]; then
+        for i in "${MISSING_RASP[@]}"; do
+          text "" "" "-$i"
+        done
+      fi
+    else
+      text "" "green" "all required dependencies already installed"
     fi
 
     #checking submodules
     submodule_check
     if [[ $submoduleck -eq 1 ]]; then
-      text "" "green" "all submodules already up to date\n"
+      text "" "green" "\nall submodules already up to date\n"
     elif [[ $submoduleck -eq 0 ]]; then
-      text "" "red" "you are missing all the required submodules!\n"
+      text "" "red" "y\nou are missing all the required submodules!\n"
     else 
-      text "" "yellow" "some submodules are missing:\n"
+      text "" "\nyellow" "some submodules are missing:\n"
       for i in "${MISSING_SUBMODULES[@]}"; do
         text "" "" "-$i"
       done
@@ -512,7 +462,7 @@ function schip_update_all { # implementazione della funzione schip -u -a -c
 
     #considerations
     if [[ $some_missing == false && $submoduleck -eq 1 ]]; then
-      text "" "" "It seems like you got all the prerequisites. You may consider updating, just to make sure.\n"
+      text "" "" "It seems like you got all the prerequisites. You may consider updating, just to make sure."
     else
       text "bold" "" "update submodules and dependencies?"
       echo -n -e "Depending on the number of submodules that need to be updated,\nthis operation may take a considerable amount of " 
@@ -538,63 +488,66 @@ function schip_update_all { # implementazione della funzione schip -u -a -c
 
     #checking executable for controller
     if [[ $1 == "controller" ]]; then
-      condition=-d out
-      if [ $condition == false ]; then
-        echo "the chip-tool executable for the controller app is missing."
-        read -p "activate anvironment and build executable? (y)" build
-        if [ "$build" == "y" ]; then
+      chiptool_check
+      if [[ $chiptoolck -eq 1 ]]; then
+        text "" "green" "\nchip-tool executable found\n"
+      else
+        text "" "red" "chip-tool executable not found\n"
+        read -p "build chip-tool executable? (yes)  " build
+        if [[ "$build" == "yes" ]]; then
           ./gn_build.sh;
         fi
-      else 
-        text "" "green" "\nchip-tool executable found\n"
-      fi 
-
-    #checking for executable for lighting app as default and asking if that one is the preferred one or if to use one other
-    elif [[ $1 == "device" ]]; then
+      fi
+    else
+      echo -e "\nHere's the list of the apps:"
+      sleep 0.3s
       cd examples
-      condition=-d lighting-app/linux/out
-      echo "here's the disposable exaples app for the device:"
-      ex_presence=false
+      spec_appck=0
       for dir in */; do
-        nldir=$(echo "$dir" | sed 's/.$//')
-        echo -n "- $nldir"
+        sleep 0.02s
         app_check $dir
-        if [[ $appck -eq 1 ]]; then
-          text "bold" "green" " ✓"
-          appck=0
-          ex_presence=true
-        else 
-          text "bold" "red" " ✗"
+        text "" "" "-$dir" "-n"
+        if [[ $spec_appck == 0 ]]; then
+          text "" "red" " ✗"
+        else
+          text "" "green" " ✓"
+          spec_appck=1
         fi
-        done
-      if [[ $condition == false ]]; then
-        echo -n "the recommanded default example"
+      done
+      app_check "lighting-app"
+      if [[ $spec_appck -eq 0 ]]; then
+        echo -n "The recommanded default example"
         text "bold" "" " lighting-app" "-n"
-        echo " is missing.\n"
+        echo " is missing."
         read -p "activate anvironment and build the executable for it? (y)" build
         if [ "$build" == "y" ]; then
           cd lighting-app/linux;
           source third_party/connectedhomeip/scripts/activate.sh;
           gn gen out/debug;
           ninja -C out/debug;
-        else 
-          text "" "red" "\nexecutable for lighting-app not found\n"
+          app_check "lighting-app"
+        fi
       fi
-
-      if [[ -d lighting-app/linux/out ]]; then
+      if [[ $appck -eq 1 ]]; then
         text "" "green" "\nexecutable for lighting-app found\n"
       fi
+    fi
 
       #final considerations
-    if [[ $some_missing == false && $submoduleck -eq 1 && $condition == true ]]; then
+    if [[ ( $1 == "device" && $spec_appck == 1 ) || ( $1 == "controller" && $chiptoolck == 1 ) && $submoduleck -eq 1 && $some_missing == false ]]; then
       text "" "" "It seems like you are ready to go. You should be able to use the $1 with:"
       if [[ $1 == "controller" ]]; then
-        text "bold" "" "schip -c"
+        text "bold" "" "schip -p -d\n"
       elif [[ $1 == "device" ]]; then
-        text "bold" "" "schip -d"
+        text "bold" "" "schip -p -d\n"
       fi
+    elif [[ $1 == "device" && $spec_appck == 0 && $appck = 1 && $submoduleck -eq 1 && $some_missing == false ]]; then
+      text "" "" "You may be good to go, but you are missing the" "-n"
+      text "bold" "" " lighting-app" "-n"
+      text "" "" " executable which is recommanded. You can still use one other app with:"
+      text "bold" "" "schip -d"
     else
-      text "" "yellow" "You are still missing some prerequisites. You should consider updating.\n"
+      text "" "yellow" "\nYou are still missing some prerequisites. Consider updating.\n"
     fi
   fi
 }
@@ -828,32 +781,14 @@ while getopts "ihbcdualps" opt; do
       schip_begin
       ;;
     u)
-      if [[ "$2" == "-a" || "$2" == "--all" ]]; then
-          if [[ "$3" == "-c" || "$3" == "--controller" ]]; then
-              schip_update_all "device"
-          elif [[ "$3" == "-d" || "$3" == "--device" ]]; then
-              schip_update_all "controller"
-          else
-              echo -e "\nInvalid argument for -u: usage: schip -u [tag] [tag]"
-              echo -e "try 'schip -h' / 'schip --help'\n"
-              exit 1
-          fi
-      elif [[ "$2" == "-s" || "$2" == "--submodules" ]]; then
-          schip_update_submodules
-      elif [[ "$2" == "-l" || "$2" == "--libraries" ]]; then
-        if [[ "$3" == "-c" || "$3" == "--controller" ]]; then
-          schip_update_libraries "controller"
-        elif [[ "$3" == "-d" || "$3" == "--device" ]]; then
-          schip_update_libraries "device"
-        else
-          echo -e "\nInvalid argument for -u: usage: schip -u [tag] [tag]"
+      if [[ "$2" == "-c" || "$2" == "--controller" ]]; then
+          schip_update_all "controller"
+      elif [[ "$2" == "-d" || "$2" == "--device" ]]; then
+          schip_update_all "device"
+      else
+          echo -e "\nInvalid argument for -u: usage: schip -u [tag]"
           echo -e "try 'schip -h' / 'schip --help'\n"
           exit 1
-        fi
-      else
-        echo -e "\nInvalid argument for -u: usage: schip -u [tag] [tag]"
-        echo -e "try 'schip -h' / 'schip --help'\n"
-        exit 1
       fi
       ;;
     p)
@@ -863,6 +798,10 @@ while getopts "ihbcdualps" opt; do
         schip_pair_device
       elif [[ "$2" == "-d" || "$2" == "--device" ]]; then
           schip_pair_controller_custom 
+      else
+          echo -e "\nInvalid argument for -p: usage: schip -p [tag]"
+          echo -e "try 'schip -h' / 'schip --help'\n"
+          exit 1
       fi
       ;;
   esac
