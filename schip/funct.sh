@@ -1,214 +1,3 @@
-#!/bin/bash
-
-################################################################################################
-#COLORI
-
-text() {
-
-  text() {
-  style=0
-  if [[ "$1" == "bold" ]]; then
-    style=1
-  elif [[ "$1" == "underlined" ]]; then
-    style=4
-  elif [[ "$1" == "italics" ]]; then
-    style=3
-  fi
-
-  color=37
-  if [[ "$2" == "red" ]]; then
-    color=31
-  elif [[ "$2" == "yellow" ]]; then
-    color=33
-  elif [[ "$2" == "green" ]]; then
-    color=32
-  elif [[ "$2" == "blue" ]]; then
-    color=34
-  else 
-    color=37
-  fi
-
-  if [[ -z "$4" ]]; then
-    echo -e "\033[${style};${color}m$3\033[0m"
-  elif [[ "$4" == "-n" ]]; then
-    echo -e -n "\033[${style};${color}m$3\033[0m"
-  else
-    echo -e "\033[${style};${color}m$3\033[0m"
-  fi
-}
-
-# Usage: text "style" "color" "string" "-n"
-
-}
-
-
-
-################################################################################################à
-#VARIABILI
-
-osck=0
-depck=0
-depckR=0
-repock=0
-chiptoolck=0
-submoduleck=0
-envck=0
-appck=0
-spec_appck=0
-
-REQUIRED_PACKAGES=(
-  git
-  gcc
-  g++
-  pkg-config
-  libssl-dev
-  libdbus-1-dev
-  libglib2.0-dev
-  libavahi-client-dev
-  ninja-build
-  python3-venv
-  python3-dev
-  python3-pip
-  unzip
-  libgirepository1.0-dev
-  libcairo2-dev
-  libreadline-dev
-)
-MISSING_REQUIRED=()
-
-RASP_PACKAGES=(
-  pi-bluetooth 
-  avahi-utils
-)
-MISSING_RASP=()
-
-################################################################################################
-#FUNZIONI OPERATIVE
-
-function set_nodeID(){
-  while true
-    nodeID=""
-    echo ""
-    read -e -p "set the nodeID to use : " nodeID
-    do
-      if [[ "$nodeID" =~ ^[0-9]+$ ]]; then
-        break
-      else
-        echo "nodeID must be a number"
-      fi
-    done
-  echo $nodeID
-}
-
-################################################################################################
-#FUNZIONI DI CHECK
-
-function os_check(){
-  os=$(lsb_release -ds)
-  if [[ $os == *"Ubuntu"* ]]; then
-      osck=2
-  fi
-  if [[ $os == *"Ubuntu 20.04"* ]] || [[ $os == *"Ubuntu 22.04"* ]]; then
-      osck=1
-  fi
-}
-
-function dep_check(){
-
-  #checking common required packages
-  if [[ "$1" == "all" || "$1" == "controller" ]]; then
-    for package in "${REQUIRED_PACKAGES[@]}"; do
-      if ! dpkg -s "$package" >/dev/null 2>&1; then
-        MISSING_REQUIRED+=("$package")
-      fi
-    done
-    if [[ "${#MISSING_REQUIRED[@]}" -eq 0 ]]; then #nothing is missing
-      depck=1
-    elif [[ "${#MISSING_REQUIRED[@]}" -gt 0 && "${#MISSING_REQUIRED[@]}" -lt "${#REQUIRED_PACKAGES[@]}" ]]; then #something is missing
-      depck=2
-    fi
-  fi
-
-  #checking raspberry pi required packages
-  if [[ "$1" == "all" || "$1" == "device" ]]; then
-    for package in "${RASP_PACKAGES[@]}"; do
-      if ! dpkg -s "$package" >/dev/null 2>&1; then
-        MISSING_RASP+=("$package")
-      fi
-    done
-    if [[ "${#MISSING_RASP[@]}" -eq 0 && "${#MISSING_REQUIRED[@]}" -eq 0 ]]; then #nothing is missing
-      depckR=1
-    elif [[ "${#MISSING_RASP[@]}" -gt 0 && "${#MISSING_RASP[@]}" -lt "${#RASP_PACKAGES[@]}" ]]; then #something is missing
-      depckR=2
-    fi
-  fi
-}
-
-function repo_check(){
-  if [ -d connectedhomeip ]; then
-    repock=1
-  fi
-}
-
-function repo_clone(){
-  text "" "\n!the chip folder is missing!\n\n" "red" ""
-    read -p "clone official connectedhomeip repository from github? (y)" build
-    if [ "$build" == "y" ]; then
-      echo -e "\nthis operation may take a while and will require a considerable amount of disk space."
-      text "bold" "continue? (y)\n" "yellow" ""
-      read confirm
-      if [[ $confirm == "y" ]]; then
-        git clone https://github.com/project-chip/connectedhomeip.git;
-        text "bold" "\nCONNECTEDHOMEIP CLONED\n\n" "green" ""
-        cd connectedhomeip
-        echo "...checking out at v1.0.0..."
-        git checkout v1.0.0;
-        text "bold" "DONE\n\n" "green" ""
-      fi
-    fi
-}
-
-function chiptool_check(){
-  if [ -d out ]; then
-    chiptoolck=1
-  fi
-}
-
-function submodule_check(){
-  cd connectedhomeip
-  num_submodules=$(git submodule status | grep -c "^ ")
-  num_total_submodules=$(git submodule status | wc -l)
-  if [ $num_submodules -eq $num_total_submodules ]; then
-    submoduleck=1
-  fi
-  if [[ $num_submodules != 0 && $num_submodules != $num_total_submodules ]]; then
-    submoduleck=2
-  fi
-  for submodule in $(git submodule status --recursive | awk '{print $2}')
-  do
-    if [ -d "$submodule" ]
-    then
-      installed_submodules+=("$submodule")
-    else
-      missing_submodules+=("$submodule")
-    fi
-  done
-}
-
-function app_check(){
-  for app in connectedhomeip/examples; do
-    if [[ -d $app/linux/out ]]; then
-      appck=1
-    fi
-  done
-  if [[ -d $1/linux/out ]]; then
-    spec_appck=1
-  fi
-}
-
-################################################################################################
-#FUNZIONI DI ESECUZIONE
-
 function schip_help() { # implementazione della funzione schip -h
 
   
@@ -309,7 +98,6 @@ function schip_help() { # implementazione della funzione schip -h
 }
 
 function schip_begin { # implementazione della funzione schip -b 
-
   #controllo dprerequisiti
   os_check
   dep_check "all"
@@ -586,12 +374,12 @@ function schip_update_libraries {
 }
 
 function schip_pair_controller {
-  pass
-    # implementazione della funzione schip -p -c [nodeID] [pinCode] [discriminator] / --pair --controller [nodeID] [pinCode] [discriminator]
-}
-
-function schip_pair_device {
+  text "" "" "\nbe sure to have all the prerequisites for the correct functioning of the controller before proceding with" "-n"
+  text "" "" "\nCheck if you have setted up all the prerequisites for the correct functioning of the controller before proceding.\n(" "-n"
+  text "bold" "" "schip -b" "-n"
+  echo ")"
   set_nodeID
+  cd connectedhomeip/out/debug/standalone
   echo -e "\npairing = 'p'\nsend commands = 'c'"
   read oper
   while true
@@ -600,8 +388,6 @@ function schip_pair_device {
     i=0
     if [[ "$oper" == "p" ]]; then
       echo -e "\n...pairing with node '$nodeID'..."
-      cd connectedhomeip/out/debug/standalone
-      pwd
       ./chip-tool pairing onnetwork $nodeID 20202021 |
       while IFS= read -r output 
       do
@@ -626,7 +412,8 @@ function schip_pair_device {
       echo -e "\n...select an onoff command to send at node $nodeID:"
       while true
       do
-        echo -e "\ntoggle = 1\non = 2\noff = 3\nquit = 4"
+        spec=""
+        text "bold" "blue" "\ntoggle = 1\non = 2\noff = 3\nquit = 4"
         read onoff
         if [[ "$onoff" ==  "1" ]]; then
           spec="onoff toggle $nodeID 1"
@@ -637,14 +424,13 @@ function schip_pair_device {
         elif [[ "$onoff" == "4" ]]; then
           break
         fi
-        cd connectedhomeip/out/debug/standalone
         eval "./chip-tool ${spec}" |
         while IFS= read -r outputb
         do
           if [[ $outputb == *"CHIP Error 0x00000032: Timeout"* ]]; then
-            echo -e "\nTIMEOUT"
+            text "" "yellow" "\nTIMEOUT" 
           elif [[ $outputb == *"OS Error 0x02000065: Network is unreachable"* ]]; then
-            echo -e "\nUNREACHABLE NETWORK"
+            text "" "red" "\nUNREACHABLE NETWORK"
           fi
           sleep 0.01s
           printf "\r${spin:i++%${#spin}:1}"
@@ -666,6 +452,11 @@ function schip_pair_device {
     echo -e "\npairing = 'p'\nsend commands = 'c'"
     read oper
   done
+    # implementazione della funzione schip -p -c [nodeID] [pinCode] [discriminator] / --pair --controller [nodeID] [pinCode] [discriminator]
+}
+
+function schip_pair_device {
+  echo "xuao"
 
     # implementazione della funzione schip -p -c [nodeID] / --pair --controller [nodeID]
 }
@@ -768,60 +559,3 @@ function schip_pair_controller_custom {
 
     # implementazione della funzione schip -p -d / --pair --device
 }
-
-################################################################################################
-#PARSING
-
-while getopts "ihbcdualps" opt; do
-  case ${opt} in
-    h)
-      schip_help
-      ;;
-    b)
-      schip_begin
-      ;;
-    u)
-      if [[ "$2" == "-c" || "$2" == "--controller" ]]; then
-          schip_update_all "controller"
-      elif [[ "$2" == "-d" || "$2" == "--device" ]]; then
-          schip_update_all "device"
-      else
-          echo -e "\nInvalid argument for -u: usage: schip -u [tag]"
-          echo -e "try 'schip -h' / 'schip --help'\n"
-          exit 1
-      fi
-      ;;
-    p)
-      echo $2
-      if [[ "$2" == "-c" || "$2" == "--controller" ]]; then
-        echo $2
-        schip_pair_device
-      elif [[ "$2" == "-d" || "$2" == "--device" ]]; then
-          schip_pair_controller_custom 
-      else
-          echo -e "\nInvalid argument for -p: usage: schip -p [tag]"
-          echo -e "try 'schip -h' / 'schip --help'\n"
-          exit 1
-      fi
-      ;;
-  esac
-done
-
-#schip -u -a -c / --update --all --controller : (fa update e controlla tutti i prerequisiti e per controller)
-
-#schip -u -a -d / --update --all --device (fa update e controlla tutti i prerequisiti per device
-
-#schip -u -s / --update --submodules : (fa update dei sottomoduli se repo esiste)
-
-#schip -u -l / --u --libreries : (fa update delle librerie necessarie e controlla esistenza repo)
-
-#schip -p -c [nodeID] / --pair --controller [nodeID] : (se prerequisiti presenti prova il pairing con [nodeID], pincode 20202021, discriminator 3840; a seconda del risultato printa azioni consigliate)
-
-#schip -p -c [nodeID] [pinCode] [discriminator] / --pair --controller [nodeID] [pinCode] [discriminator] : ( se prerequisiti presenti prova il pairing con il nodo dato, [pinCode], [discriminator]; a seconda del risultato printa azioni consigliate)
-
-#schip -p -d / --pair --device : (lista applicazioni che possono essere eseguite, fa selezioinare applicazione da eseguire, controlla esistenza file eseguibili: se non esiste eseguibile per app scelta chiede se crearlo e poi lo esegue; per lighting-app permette di scegliere se operare sul led, per le altre mostra i log)
-
-
-
-#trovare modo per fare lista di sottomoduli mancanti
-
