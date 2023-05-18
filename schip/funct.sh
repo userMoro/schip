@@ -99,6 +99,7 @@ function schip_help() { # implementazione della funzione schip -h
 
 function schip_begin { # implementazione della funzione schip -b 
   #controllo dprerequisiti
+  cd ../connectedhomeip
   os_check
   dep_check "all"
   repo_check
@@ -286,7 +287,7 @@ function schip_update_all { # implementazione della funzione schip -u -a -c
           ./gn_build.sh;
         fi
       fi
-    else
+    else #checking executable for device
       echo -e "\nHere's the list of the apps:"
       sleep 0.3s
       cd examples
@@ -304,7 +305,7 @@ function schip_update_all { # implementazione della funzione schip -u -a -c
       done
       app_check "lighting-app"
       if [[ $spec_appck -eq 0 ]]; then
-        echo -n "The recommanded default example"
+        echo -e -n "\nThe recommanded default example"
         text "bold" "" " lighting-app" "-n"
         echo " is missing."
         read -p "activate anvironment and build the executable for it? (y)" build
@@ -315,6 +316,23 @@ function schip_update_all { # implementazione della funzione schip -u -a -c
           ninja -C out/debug;
           app_check "lighting-app"
         fi
+      fi
+      echo -e "\n(not adviced)"
+      text "bold" "" "If you want to build any other app, enter the full name here: " "-n"
+      read newapp
+      match=false
+      for dir in */; do
+        if [[ $dir == "$newapp/" ]]; then
+          match=true
+          cd $dir/linux;
+          source third_party/connectedhomeip/scripts/activate.sh;
+          gn gen out/debug;
+          ninja -C out/debug;
+          app_check $newapp
+        fi
+      done
+      if [[ $match == false ]]; then
+        text "" "yellow" "\nno matching app found."
       fi
       if [[ $appck -eq 1 ]]; then
         text "" "green" "\nexecutable for lighting-app found\n"
@@ -338,39 +356,6 @@ function schip_update_all { # implementazione della funzione schip -u -a -c
       text "" "yellow" "\nYou are still missing some prerequisites. Consider updating.\n"
     fi
   fi
-}
-
-function schip_update_submodules { # implementazione della funzione schip -u -s / --update --submodules
-  pass
-}
-
-function schip_update_libraries {
-  dep_check $1
-  echo ""
-  text "bold" "" "confirm to install the following missing dependencies? (y)"
-  #check if there are elements inside MISSING_REQUIRED and MISSING_RASP
-  if [[ ${#MISSING_REQUIRED[@]} -eq 0 ]] && [[ ${#MISSING_RASP[@]} -eq 0 ]]; then
-    text "italics" "green" "no missing dependencies found"
-  else
-    text "bold" "" "confirm to install the following missing dependencies?"
-    for req in "${MISSING_REQUIRED[@]}"; do
-      text "italics" "" "- $req" 
-    done
-    if [[ $1 == "device" ]]; then
-      for reqr in "${MISSING_RASP[@]}"; do
-        text "italics" "" "- $reqr" 
-      done
-    fi
-    text "bold" "" "enter 'y' to confirm"
-    read confirm
-    if [[ "$confirm" == "y" ]]; then
-      sudo apt-get install "${MISSING_REQUIRED[@]}"
-      if [[ $1 == "device" ]]; then
-        sudo apt-get install "${MISSING_RASP[@]}"
-      fi
-    fi
-  fi
-  echo ""
 }
 
 function schip_pair_controller {

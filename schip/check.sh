@@ -46,6 +46,7 @@ function repo_check(){
   if [ -d connectedhomeip ]; then
     repock=1
   fi
+  cd connectedhomeip
 }
 
 function repo_clone(){
@@ -73,7 +74,6 @@ function chiptool_check(){
 }
 
 function submodule_check(){
-  cd connectedhomeip
   num_submodules=$(git submodule status | grep -c "^ ")
   num_total_submodules=$(git submodule status | wc -l)
   if [ $num_submodules -eq $num_total_submodules ]; then
