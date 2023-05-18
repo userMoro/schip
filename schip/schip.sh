@@ -51,6 +51,25 @@ function set_nodeID(){
   fi
 }
 
+function repo_clone(){
+  text "" "\n!the chip folder is missing!\n\n" "red" ""
+    read -p "clone official connectedhomeip repository from github? (y)" build
+    if [ "$build" == "y" ]; then
+      echo -e "\nthis operation may take a while and will require a considerable amount of disk space."
+      text "bold" "continue? (y)\n" "yellow" ""
+      read confirm
+      if [[ $confirm == "y" ]]; then
+        cd ..
+        git clone https://github.com/project-chip/connectedhomeip.git;
+        text "bold" "\nCONNECTEDHOMEIP CLONED\n\n" "green" ""
+        cd connectedhomeip
+        echo -e "...checking out at v1.0.0...\n"
+        git checkout v1.0.0;
+        text "bold" "DONE\n\n" "green" ""
+      fi
+    fi
+}
+
 while getopts "ihbcdualps" opt; do
   case ${opt} in
     h)

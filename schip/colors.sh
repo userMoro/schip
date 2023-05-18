@@ -1,8 +1,6 @@
 #!/bin/bash
 
 text() {
-
-  text() {
   style=0
   if [[ "$1" == "bold" ]]; then
     style=1
@@ -35,5 +33,3 @@ text() {
 }
 
 # Usage: text "style" "color" "string" "-n"
-
-}

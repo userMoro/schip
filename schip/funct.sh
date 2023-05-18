@@ -1,7 +1,5 @@
 function schip_help() { # implementazione della funzione schip -h
 
-  
-
   text "" "blue" "____________________________________________________________________________________________________________________________________" 
   text "underlined" "blue" "\nDESCRIPTION:                                                                                                                        "
   text "" "blue" "|                                                                                                                                   |"
