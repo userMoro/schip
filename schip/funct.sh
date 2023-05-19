@@ -440,25 +440,30 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
   text "" "blue" "\nBe sure to have all the prerequisites for the correct functioning of the controller before proceding using " "-n"
   text "bold" "" "schip -b" ""
   app_check "lighting-app"
+
+  if [[ $1 == "log" ]]; then 
+    echo "log"
+  else 
+    if [ -d "/sys/class/gpio/gpio17" ]; then
+      exist=1
+    else
+      exist=0
+    fi
+    if [ "$exist" -eq 0 ]; then
+      cd /sys/class/gpio
+      echo 17 > export
+      cd gpio17
+      echo out > direction
+    fi
+  fi
+
   if [[ $spec_appck -eq 1 ]]; then
-    cd ../connectedhomeip/lighting/app/linux
-    if [[ $1 == "normal" ]]; then
-      ./out/debug/chip-$app --ble-device 0
-    elif [[ $1 == "led" ]]; then
-      echo -e "\nwaiting for incoming messages..."
-      ./out/debug/chip-$app --ble-device 0 |
-      while IFS= read -r output; do
-        if [ -d "/sys/class/gpio/gpio17" ]; then
-          exist=1
-        else
-          exist=0
-        fi
-        if [ "$exist" -eq 0 ]; then
-          cd /sys/class/gpio
-          echo 17 > export
-          cd gpio17
-          echo out > direction
-        fi
+    echo -e "\nwaiting for incoming messages..."
+    ./out/debug/chip-$app --ble-device 0 |
+    while IFS= read -r output; do
+      if [[ $1 == "log"]]; then 
+        echo $output
+      else
         if [[ $output == *"On Command"* ]]; then
           cd /sys/class/gpio/gpio17
           echo 1 >value
@@ -468,7 +473,7 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
           echo 0 >value
           echo "OFF received"
         fi
-      done
+    done
     fi
   else
     text "" "yellow" "\n'lighting-app' executable not found. Consider updating using " "-n" 
