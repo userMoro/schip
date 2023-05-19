@@ -347,7 +347,13 @@ function schip_pair_controller { # implementazione dellla funzione schip -p -c
 # controller: - / nodeID / nodeID, log / nodeID, pincode, discriminator / nodeID, pincode, discriminator, log 
   text "" "blue" "\nBe sure to have all the prerequisites for the correct functioning of the controller before proceding using " "-n"
   text "bold" "" "schip -b" ""
-  set_nodeID
+
+  if [[ $1 =~ ^[0-9]{4} ]]; then
+    nodeID=$1
+  else 
+    set_nodeID
+  fi
+
   cd ../connectedhomeip/out/debug/standalone
   #set a variable that is true only if the current directory is standalone
   standalone=$(pwd | grep standalone)
@@ -366,14 +372,23 @@ function schip_pair_controller { # implementazione dellla funzione schip -p -c
         spin='|/-\'
         i=0
         if [[ "$oper" == "p" ]]; then
-          pair_controller
+          #check if one of the values given at the function is "log"
+          if [[ $1 == "log" || $2 == "log" ]]; 
+            pair_controller_manage "log"
+          elif [[ $4 == "log" ]]; then
+            pair_controller_manage $2 $3 "log"
+          else
+            pair_controller_manage
           if [[ "$oper" == "p" ]]; then
             read -p "retry pairing? (y)" retry
           fi
         fi
         if [[ "$oper" == "c" ]]; then
           echo -e "\n...select an onoff command to send at node $nodeID:"
-          command_controller
+          if [[ $1 == "log" || $2 == "log" || $4 == "log" ]]; then
+            command_controller "log"
+          else
+            command_controller
         fi
         if [[ $retry != "y" ]]; then
           break
@@ -461,59 +476,3 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
   fi
 }
 
-
-
-function sch { # implementazione dellla funzione schip -p -c
-# controller: - / nodeID / nodeID, log / nodeID, pincode, discriminator / nodeID, pincode, discriminator, log 
-  text "" "blue" "\nBe sure to have all the prerequisites for the correct functioning of the controller before proceding using " "-n"
-  text "bold" "" "schip -b" ""
-
-  if [[ $1 =~ ^[0-9]{4} ]]; then
-    nodeID=$1
-  else 
-    set_nodeID
-  fi
-
-  cd ../connectedhomeip/out/debug/standalone
-  #set a variable that is true only if the current directory is standalone
-  standalone=$(pwd | grep standalone)
-  if [[ $standalone == "" ]]; then
-    text "" "red" "\nERROR: connectedhomeip missing or not initialized or not in the right position\n"
-  else
-    echo -e "\npairing = 'p'\nsend commands = 'c'"
-    read oper
-    if [[ $oper == "p" || $oper == "c" ]]; then
-      while true
-      do
-        if [[ $onoff == "5" ]]; then
-          echo ""
-          break 
-        fi
-        spin='|/-\'
-        i=0
-        if [[ "$oper" == "p" ]]; then
-          #check if one of the values given at the function is "log"
-          if [[ $1 == "log" || $2 == "log" ]]; 
-            pair_controller_manage "log"
-          elif [[ $4 == "log" ]]; then
-            pair_controller_manage $2 $3 "log"
-          else
-            pair_controller_manage
-          if [[ "$oper" == "p" ]]; then
-            read -p "retry pairing? (y)" retry
-          fi
-        fi
-        if [[ "$oper" == "c" ]]; then
-          echo -e "\n...select an onoff command to send at node $nodeID:"
-          if [[ $1 == "log" || $2 == "log" || $4 == "log" ]]; then
-            command_controller "log"
-          else
-            command_controller
-        fi
-        if [[ $retry != "y" ]]; then
-          break
-        fi
-      done
-    fi
-  fi
-}
