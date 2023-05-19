@@ -184,54 +184,45 @@ while getopts "ihbcdualps" opt; do
       ;;
     p)
       if [[ "$2" == "-c" || "$2" == "--controller" ]]; then
-        if [[ $3 == "-l" || $3 == "--log" ]]; then
-          schip_pair_controller "log"
-          if [[ -d $5 && -d $6 ]]; then 
-            if [[ $4 =~ ^[0-9]{4} && $5 =~ ^[0-9]{8}$ && $6 =~ ^[0-9]{4} ]]; then
-              schip_pair_controller "log" $4 $5 $6
-            else
-              echo -e "\nInvalid argument for -p -c -l [nodeID] [pinCode] [discriminator]: \nnodeID and discriminator have to be a 4 digit number; pinCode has to be a 8 digit number"
-              echo -e "try 'schip -h' / 'schip --help'\n"
-              exit 1
-            fi
-          elif [[ -d $4 && -z $5 ]]; then
-            if [[ $4 =~ ^[0-9]{4}$ ]]; then
-              schip_pair_controller "log" $4
-            else
-              echo -e "\nInvalid argument for -p -c -l [nodeID]: nodeID has to be a 4 digit number"
-              echo -e "try 'schip -h' / 'schip --help'\n"
-              exit 1
-            fi
-          fi
-        elif [[ -d $3 && $3 != "-l" && $3 != "--log" && $3 =~ ^[0-9]{4} ]]; then
-          schip_pair_controller $3
+        if [[ -d $3 ]]; then
+          if [[ $3 =~ ^[0-9]{4} && -z $4 ]]; then
+            schip_pair_controller $3
+          elif [[ $3 =~ ^[0-9]{4} && ( $4 == "-l" || $4 == "--log" ) ]]; then
+            schip_pair_controller $3 "log"
+          elif [[ $3 =~ ^[0-9]{4} && $4 =~ ^[0-9]{8} && $5 =~ ^[0-9]{4} && ( ( $6 != "-l" || $6 != "--log") || -z $6 ) ]]; then
+            schip_pair_controller $3 $4 $5
+          elif [[ $3 =~ ^[0-9]{4} && $4 =~ ^[0-9]{8} && $5 =~ ^[0-9]{4} && ( $6 == "-l" || $6 == "--log" ) ]]; then
+            schip_pair_controller $3 $4 $5 "log"
+          else
+            echo -e "\nInvalid argument for -p -c / --pair --controller"
+            echo -e "try 'schip -h' / 'schip --help'\n"
+            exit 1
         else 
-          echo -e "\nInvalid argument for -p -c [nodeID]: nodeID has to be a 4 digit number"
-          echo -e "try 'schip -h' / 'schip --help'\n"
-          exit 1
-        elif [[ -z "$3" ]]; then
           schip_pair_controller
         fi
+
       elif [[ "$2" == "-d" || "$2" == "--device" ]]; then
-        if [[ $3 == "-l" || $3 == "--led" ]]; then
-          schip_pair_device "led"
-        elif [[ $3 == "-n" || $3 == "--normal" ]]; then 
-          schip_pair_device "normal"
-        elif [[ "$3" == "-s" || $3 == "--select" ]]; then
-          schip_pair_device_select
+        if [[ -d $3 ]]; then
+          if [[ $3 == "-l" || $3 == "--log" ]]; then
+            schip_pair_device "log"
+          elif [[ "$3" == "-s" || $3 == "--select" ]]; then
+            schip_pair_device_select
+          else
+            echo -e "\nInvalid argument for -p -d: usage: schip -p -d [tag]"
+            echo -e "try 'schip -h' / 'schip --help'\n"
+            exit 1
+          fi
         else
-          echo -e "\nInvalid argument for -p -d: usage: schip -p -d [tag]"
-          echo -e "try 'schip -h' / 'schip --help'\n"
-          exit 1
+          schip_pair_device
         fi
       else
-          echo -e "\nInvalid argument for -p: usage: schip -p [tag] [tag]"
+          echo -e "\nInvalid argument for -p: usage: schip -p [tag] <options>"
           echo -e "try 'schip -h' / 'schip --help'\n"
           exit 1
       fi
       ;;
-  esac
-done
+      esac
+    done
 
 #schip -u -a -c / --update --all --controller : (fa update e controlla tutti i prerequisiti e per controller)
 

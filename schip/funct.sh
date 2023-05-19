@@ -459,6 +459,3 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
     text "bold" "" "schip -u -d\n"
   fi
 }
-
-
-  
