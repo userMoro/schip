@@ -36,7 +36,7 @@ function schip_help() { # implementazione della funzione schip -h
   text "" "blue" "|                                                                                                                                   |"
   text "" "blue" "| " "-n"
   
-  text "bold" "" "schip -u -c / --update --controller                                                                                     " "-n"
+  text "bold" "" "schip -u -c / --update --controller                                                                                              " "-n"
   text "" "blue" " |\n| " "-n"
   text "italics" "" "check and update prerequisites for controller                                                                                     " "-n"
 
@@ -44,17 +44,33 @@ function schip_help() { # implementazione della funzione schip -h
   text "" "blue" "|                                                                                                                                   |"
   text "" "blue" "| " "-n"
   
-  text "bold" "" "schip -u -d / --update --device                                                                                         " "-n"
+  text "bold" "" "schip -u -d / --update --device                                                                                                  " "-n"
   text "" "blue" " |\n| " "-n"
   text "italics" "" "check and update prerequisites for device                                                                                         " "-n"
 
   text "" "blue" "| "
   text "" "blue" "|                                                                                                                                   |"
   text "" "blue" "| " "-n"
-
-  text "bold" "" "schip -p -c [nodeID] / --pair --controller [nodeID]                                                                              " "-n"
+  
+  text "bold" "" "schip -p -c  / --pair --controller                                                                                               " "-n"
   text "" "blue" " |\n| " "-n"
-  text "italics" "" "starts pairing with : '[nodeID], pincode 20202021, discriminator 3840' (if prerequisites satysfied)                               " "-n"
+  text "italics" "" "pairing and send commands at : 'nodeID:1234, pincode:20202021, discriminator:3840' (if prerequisites satysfied)                   " "-n"
+
+  text "" "blue" "| "
+  text "" "blue" "|                                                                                                                                   |"
+  text "" "blue" "| " "-n"
+  
+  text "bold" "" "schip -p -c [nodeID]  / --pair --controller [nodeID]                                                                             " "-n"
+  text "" "blue" " |\n| " "-n"
+  text "italics" "" "pairing and send commands at : '[nodeID], pincode:20202021, discriminator:3840' (if prerequisites satysfied)                      " "-n"
+
+  text "" "blue" "| "
+  text "" "blue" "|                                                                                                                                   |"
+  text "" "blue" "| " "-n"
+
+  text "bold" "" "schip -p -c [nodeID] -l  / --pair --controller [nodeID] --log                                                                    " "-n"
+  text "" "blue" " |\n| " "-n"
+  text "italics" "" "pairing and send commands at : '[nodeID], pincode:20202021, discriminator:3840' (if prerequisites satysfied) showing logs         " "-n"
 
   text "" "blue" "| "
   text "" "blue" "|                                                                                                                                   |"
@@ -62,23 +78,31 @@ function schip_help() { # implementazione della funzione schip -h
 
   text "bold" "" "schip -p -c [nodeID] [pinCode] [discriminator] / --pair --controller [nodeID] [pinCode] [discriminator]                          " "-n"
   text "" "blue" " |\n| " "-n"
-  text "italics" "" "starts pairing with : '[nodeID], [pincode], [discriminator]' (if prerequisites satysfied)                                         " "-n"
+  text "italics" "" "pairing and send commands at : '[nodeID], [pincode], [discriminator]' (if prerequisites satysfied)                                " "-n"
 
   text "" "blue" "| "
   text "" "blue" "|                                                                                                                                   |"
   text "" "blue" "| " "-n"
 
-  text "bold" "" "schip -p -d -l / --pair --device --led                                                                                           " "-n"
+  text "bold" "" "schip -p -c [nodeID] [pinCode] [discriminator] -l / --pair --controller [nodeID] [pinCode] [discriminator] --log                 " "-n"
   text "" "blue" " |\n| " "-n"
-  text "italics" "" "Pair device or receive commands translated for led. Default example application used is lighting-app (if prerequisites satysfied) " "-n"
+  text "italics" "" "pairing and send commands at : '[nodeID], [pincode], [discriminator]' (if prerequisites satysfied) showing logs                   " "-n"
 
   text "" "blue" "| "
   text "" "blue" "|                                                                                                                                   |"
   text "" "blue" "| " "-n"
 
-  text "bold" "" "schip -p -d -n / --pair --device --n                                                                                             " "-n"
+  text "bold" "" "schip -p -d / --pair --device                                                                                                    " "-n"
   text "" "blue" " |\n| " "-n"
-  text "italics" "" "Pair device or receive commands showing logs. Default example application used is lighting-app (if prerequisites satysfied)       " "-n"
+  text "italics" "" "Pair device or receive commands translated for led. Lighting-app is default (if prerequisites satysfied)                          " "-n"
+
+  text "" "blue" "| "
+  text "" "blue" "|                                                                                                                                   |"
+  text "" "blue" "| " "-n"
+
+  text "bold" "" "schip -p -d -l / --pair --device --log                                                                                           " "-n"
+  text "" "blue" " |\n| " "-n"
+  text "italics" "" "Pair device or receive commands showing logs. Lighting-app is default (if prerequisites satysfied)                                " "-n"
 
   text "" "blue" "| "
   text "" "blue" "|                                                                                                                                   |"
@@ -373,12 +397,13 @@ function schip_pair_controller { # implementazione dellla funzione schip -p -c
         i=0
         if [[ "$oper" == "p" ]]; then
           #check if one of the values given at the function is "log"
-          if [[ $1 == "log" || $2 == "log" ]]; 
+          if [[ $1 == "log" || $2 == "log" ]]; then
             pair_controller_manage "log"
           elif [[ $4 == "log" ]]; then
             pair_controller_manage $2 $3 "log"
           else
             pair_controller_manage
+          fi
           if [[ "$oper" == "p" ]]; then
             read -p "retry pairing? (y)" retry
           fi
@@ -389,6 +414,7 @@ function schip_pair_controller { # implementazione dellla funzione schip -p -c
             command_controller "log"
           else
             command_controller
+          fi
         fi
         if [[ $retry != "y" ]]; then
           break
@@ -460,8 +486,9 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
   if [[ $spec_appck -eq 1 ]]; then
     echo -e "\nwaiting for incoming messages..."
     ./out/debug/chip-$app --ble-device 0 |
-    while IFS= read -r output; do
-      if [[ $1 == "log"]]; then 
+    while IFS= read -r output
+    do
+      if [[ $1 == "log" ]]; then 
         echo $output
       else
         if [[ $output == *"On Command"* ]]; then
@@ -473,8 +500,8 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
           echo 0 >value
           echo "OFF received"
         fi
+      fi
     done
-    fi
   else
     text "" "yellow" "\n'lighting-app' executable not found. Consider updating using " "-n" 
     text "bold" "" "schip -u -d\n"

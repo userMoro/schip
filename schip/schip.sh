@@ -69,11 +69,13 @@ function pair_controller(){
       echo $output 
     else
       printf "\r${spin:i++%${#spin}:1}"
+    fi
   done
   if [[ $end == "" ]]; then
     text "" "green" "\nPAIRING COMPLETED\n"
   else
     text "" "yellow" "\n$end"
+  fi
 }
 
 function pair_controller_manage() {
