@@ -51,21 +51,44 @@ function set_nodeID(){
   fi
 }
 
-function pair_controller() {
-  echo -e "\n...pairing with node '$nodeID'..."
-  ./chip-tool pairing onnetwork $nodeID 20202021 |
+function pair_controller(){
   while IFS= read -r output 
   do
     if [[ $output == *"CHIP Error 0x00000032: Timeout"* ]]; then
-      text "" "yellow" "\nTIMEOUT"
+      end=$output
     elif [[ $output == *"OS Error 0x02000065: Network is unreachable"* ]]; then
-      text "" "yellow" "\nUNREACHABLE NETWORK"
+      end=$output
+    fi
+    if [[ $end != "" ]]; then
+      break
     else
       oper="c"
     fi
     sleep 0.03s
-    printf "\r${spin:i++%${#spin}:1}"
+    if [[ $1 == "log" ]]; then 
+      echo $output 
+    else
+      printf "\r${spin:i++%${#spin}:1}"
   done
+  if [[ $end == "" ]]; then
+    text "" "green" "\nPAIRING COMPLETED\n"
+  else
+    text "" "yellow" "\n$end"
+}
+
+function pair_controller_manage() {
+  end=""
+  echo -e "\n...pairing with node '$nodeID'..."
+  if [[ $1 == "log" ]]; then
+    ./chip-tool pairing onnetwork $nodeID 20202021 |
+    pair_controller "log"
+  elif [[ $3 == "log" ]]; then
+    ./chip-tool pairing onnetwork-long $nodeID $1 $2 |
+    pair_controller "log"
+  else
+    ./chip-tool pairing onnetwork $nodeID 20202021 |
+    pair_controller
+  fi
 }
 
 function command_controller () {
@@ -183,6 +206,7 @@ while getopts "ihbcdualps" opt; do
       fi
       ;;
     p)
+    # controller: - / nodeID / nodeID, log / nodeID, pincode, discriminator / nodeID, pincode, discriminator, log 
       if [[ "$2" == "-c" || "$2" == "--controller" ]]; then
         if [[ -d $3 ]]; then
           if [[ $3 =~ ^[0-9]{4} && -z $4 ]]; then
@@ -197,10 +221,11 @@ while getopts "ihbcdualps" opt; do
             echo -e "\nInvalid argument for -p -c / --pair --controller"
             echo -e "try 'schip -h' / 'schip --help'\n"
             exit 1
+          fi
         else 
           schip_pair_controller
         fi
-
+    # device: - / log
       elif [[ "$2" == "-d" || "$2" == "--device" ]]; then
         if [[ -d $3 ]]; then
           if [[ $3 == "-l" || $3 == "--log" ]]; then
