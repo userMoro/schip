@@ -196,7 +196,7 @@ function schip_begin { # implementazione della funzione schip -b
 
 }
 
-function schip_update_all { # implementazione della funzione schip -u -a -c
+function schip_update { # implementazione della funzione schip -u -a -c
 
   echo -e "\n...checking prerequisites...\n"
 
@@ -206,7 +206,6 @@ function schip_update_all { # implementazione della funzione schip -u -a -c
     repo_clone
     text "bold" "" "check your controller prerequisites again with 'schip -u -a -c'\n"
   elif [[ $repock -eq 1 ]]; then
-    text "" "green" "connectedhomeip folder found\n\n"
     text "" "green" "connectedhomeip folder found\n"
 
     #checking dependecies
@@ -288,19 +287,7 @@ function schip_update_all { # implementazione della funzione schip -u -a -c
     else #checking executable for device
       echo -e "\nHere's the list of the apps:"
       sleep 0.3s
-      cd examples
-      spec_appck=0
-      for dir in */; do
-        sleep 0.02s
-        app_check $dir
-        text "" "" "-$dir" "-n"
-        if [[ $spec_appck == 0 ]]; then
-          text "" "red" " ✗"
-        else
-          text "" "green" " ✓"
-          spec_appck=1
-        fi
-      done
+      app_list "all"
       app_check "lighting-app"
       if [[ $spec_appck -eq 0 ]]; then
         echo -e -n "\nThe recommanded default example"
@@ -356,189 +343,122 @@ function schip_update_all { # implementazione della funzione schip -u -a -c
   fi
 }
 
-function schip_pair_controller {
-  text "" "" "\nbe sure to have all the prerequisites for the correct functioning of the controller before proceding with" "-n"
-  text "" "" "\nCheck if you have setted up all the prerequisites for the correct functioning of the controller before proceding.\n(" "-n"
-  text "bold" "" "schip -b" "-n"
-  echo ")"
+function schip_pair_controller { # implementazione dellla funzione schip -p -c
+  text "" "blue" "\nBe sure to have all the prerequisites for the correct functioning of the controller before proceding using " "-n"
+  text "bold" "" "schip -b" ""
   set_nodeID
-  cd connectedhomeip/out/debug/standalone
-  echo -e "\npairing = 'p'\nsend commands = 'c'"
-  read oper
-  while true
-  do
-    spin='|/-\'
-    i=0
-    if [[ "$oper" == "p" ]]; then
-      echo -e "\n...pairing with node '$nodeID'..."
-      ./chip-tool pairing onnetwork $nodeID 20202021 |
-      while IFS= read -r output 
-      do
-        if [[ $output == *"CHIP Error 0x00000032: Timeout"* ]]; then
-          echo -e "\nTIMEOUT"
-        elif [[ $output == *"OS Error 0x02000065: Network is unreachable"* ]]; then
-          echo -e "\nUNREACHABLE NETWORK"
-        else
-          oper="c"
-        fi
-        sleep 0.03s
-        printf "\r${spin:i++%${#spin}:1}"
-      done
-      if [[ "$oper" == "p" ]]; then
-        read -p "retry pairing? (y)" retry
-        if [[ "$retry" == "y" ]]; then
-          continue
-        fi
-      fi
-    fi
-    if [[ "$oper" == "c" ]]; then
-      echo -e "\n...select an onoff command to send at node $nodeID:"
-      while true
-      do
-        spec=""
-        text "bold" "blue" "\ntoggle = 1\non = 2\noff = 3\nquit = 4"
-        read onoff
-        if [[ "$onoff" ==  "1" ]]; then
-          spec="onoff toggle $nodeID 1"
-        elif [[ "$onoff" == "2" ]]; then
-          spec="onoff on $nodeID 1"
-        elif [[ "$onoff" == "3" ]]; then
-          spec="onoff off $nodeID 1"
-        elif [[ "$onoff" == "4" ]]; then
-          break
-        fi
-        eval "./chip-tool ${spec}" |
-        while IFS= read -r outputb
-        do
-          if [[ $outputb == *"CHIP Error 0x00000032: Timeout"* ]]; then
-            text "" "yellow" "\nTIMEOUT" 
-          elif [[ $outputb == *"OS Error 0x02000065: Network is unreachable"* ]]; then
-            text "" "red" "\nUNREACHABLE NETWORK"
-          fi
-          sleep 0.01s
-          printf "\r${spin:i++%${#spin}:1}"
-        done
-      done
-      read -p "try again? (y)" again
-      if [[ "$again" != "y" ]]; then
-        echo -e "\nset new nodeID = 1\nunpair and quit = 2\n"
-        read last
-        if [[ "$last" == "1" ]]; then
-          read -p "nodeID : " nodeID
-        elif [[ "$last" == "2" ]]; then
-          echo -e "\n...unpairing '$nodeID'...\n"
-          ./chip-tool pairing unpair $nodeID
-          break
-        fi
-      fi
-    fi
+  cd ../connectedhomeip/out/debug/standalone
+  #set a variable that is true only if the current directory is standalone
+  standalone=$(pwd | grep standalone)
+  if [[ $standalone == "" ]]; then
+    text "" "red" "\nERROR: connectedhomeip missing or not initialized or not in the right position\n"
+  else
     echo -e "\npairing = 'p'\nsend commands = 'c'"
     read oper
-  done
-    # implementazione della funzione schip -p -c [nodeID] [pinCode] [discriminator] / --pair --controller [nodeID] [pinCode] [discriminator]
+    if [[ $oper == "p" || $oper == "c" ]]; then
+      while true
+      do
+        if [[ $onoff == "5" ]]; then
+          echo ""
+          break 
+        fi
+        spin='|/-\'
+        i=0
+        if [[ "$oper" == "p" ]]; then
+          pair_controller
+          if [[ "$oper" == "p" ]]; then
+            read -p "retry pairing? (y)" retry
+          fi
+        fi
+        if [[ "$oper" == "c" ]]; then
+          echo -e "\n...select an onoff command to send at node $nodeID:"
+          command_controller
+        fi
+        if [[ $retry != "y" ]]; then
+          break
+        fi
+      done
+    fi
+  fi
+      # implementazione della funzione schip -p -c [nodeID] [pinCode] [discriminator] / --pair --controller [nodeID] [pinCode] [discriminator]
 }
 
-function schip_pair_device {
-  echo "xuao"
-
-    # implementazione della funzione schip -p -c [nodeID] / --pair --controller [nodeID]
-}
-
-function schip_pair_controller_custom {
-  cd connectedhomeip/examples/linux
-  echo -e "Seleziona l'esempio che vuoi utilizzare:\n"
+function schip_pair_device_select { # implementazione della funzione schip -p -d -s
+  text "" "blue" "\nBe sure to have all the prerequisites for the correct functioning of the device before proceding using " "-n"
+  text "bold" "" "schip -b" ""
+  cd ../connectedhomeip
+  echo -e "\nSeleziona l'esempio che vuoi utilizzare:\n"
   ex=0
   while true
   do
-    n=1
-    pwd
-    cd connectedhomeip/examples
-    for dir in */; do
-        nldir=$(echo "$dir" | sed 's/.$//')
-        echo "$n = $nldir"
+    app_check
+    if [[ $appck -eq 0 ]]; then
+      text "" "yellow" "no app executable found. Consider updating using " "-n"
+      text "bold" "" "schip -u -d\n"
+      break
+    else 
+      echo -e "\nHere's the list of the apps:"
+      app_list "green"
+      echo ""
+      read -p "insert number: " num
+      n=1
+      for dir in */
+      do
+        if [ "$n" == "$num" ]; then
+          app=${dir%/}
+          echo -e "\n'$app' selected\n"
+          ex=1
+          break
+        fi
         ((n++))
-    done
-    echo ""
-    read -p "insert number: " num
-    n=1
-    for dir in */
-    do
-      if [ "$n" == "$num" ]; then
-        app=${dir%/}
-        echo -e "\n'$app' selected\n"
-        ex=1
+      done
+      if [[ "$ex" == 1 ]]; then
         break
       fi
-      ((n++))
-    done
-    if [[ "$ex" == 1 ]]; then
-      break
-    fi
-    echo -e "\n!bad input!\n"
+      echo -e "\n!bad input!\n"
+      fi
   done
-
-  cd $app/linux;
-  if ! [ -d out ]; then
-    echo "the executable for this app is missing."
-    read -p "activate anvironment and build executable? (y)" build
-    if [ "$build" == "y" ]; then
-      git submodule update --init;
-      source third_party/connectedhomeip/scripts/activate.sh;
-      gn gen out/debug;
-      ninja -C out/debug;
-    fi
-  fi
-
-  echo ""
-  echo "-----------------------------------------------------------------------------------------------------------------------------------"
-  if [ "$app" == "lighting-app" ]; then
-    echo -e "SELCET AN OPTION:\n-normal pairing = N\n-enable led = L"
-    read p_mode
-  else 
-    p_mode="N"
-  fi
-
-  echo ""
-  echo "-----------------------------------------------------------------------------------------------------------------------------------"
-  if [ "$app" == "lighting-app" ]; then
-    echo -e "SELCET AN OPTION:\n-normal pairing = N\n-enable led = L"
-    read p_mode
-  else 
-    p_mode="N"
-  fi
-
-  if [ "$p_mode" == "N" ]; then
-    out/debug/chip-$app --ble-device 0
-  elif [ "$p_mode" == "L" ]; then
-    echo -e "\nwaiting for incoming messages..."
-    ./out/debug/chip-$app --ble-device 0 |
-    while IFS= read -r output; do
-      if [ -d "/sys/class/gpio/gpio17" ]; then
-        exist=1
-      else
-        exist=0
-      fi
-      if [ "$exist" -eq 0 ]; then
-        cd /sys/class/gpio
-        echo 17 > export
-        cd gpio17
-        echo out > direction
-      fi
-      if [[ $output == *"On Command"* ]]; then
-        cd /sys/class/gpio/gpio17
-        echo 1 >value
-        echo "ON received"
-      elif [[ $output == *"Off Command"* ]]; then
-        cd /sys/class/gpio/gpio17
-        echo 0 >value
-        echo "OFF received"
-      fi
-    done
-  else 
-    echo "bye"
-  fi
-
-
-
-    # implementazione della funzione schip -p -d / --pair --device
 }
+
+function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
+  text "" "blue" "\nBe sure to have all the prerequisites for the correct functioning of the controller before proceding using " "-n"
+  text "bold" "" "schip -b" ""
+  app_check "lighting-app"
+  if [[ $spec_appck -eq 1 ]]; then
+    cd ../connectedhomeip/lighting/app/linux
+    if [[ $1 == "normal" ]]; then
+      ./out/debug/chip-$app --ble-device 0
+    elif [[ $1 == "led" ]]; then
+      echo -e "\nwaiting for incoming messages..."
+      ./out/debug/chip-$app --ble-device 0 |
+      while IFS= read -r output; do
+        if [ -d "/sys/class/gpio/gpio17" ]; then
+          exist=1
+        else
+          exist=0
+        fi
+        if [ "$exist" -eq 0 ]; then
+          cd /sys/class/gpio
+          echo 17 > export
+          cd gpio17
+          echo out > direction
+        fi
+        if [[ $output == *"On Command"* ]]; then
+          cd /sys/class/gpio/gpio17
+          echo 1 >value
+          echo "ON received"
+        elif [[ $output == *"Off Command"* ]]; then
+          cd /sys/class/gpio/gpio17
+          echo 0 >value
+          echo "OFF received"
+        fi
+      done
+    fi
+  else
+    text "" "yellow" "\n'lighting-app' executable not found. Consider updating using " "-n" 
+    text "bold" "" "schip -u -d\n"
+  fi
+}
+
+
+  

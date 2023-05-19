@@ -76,6 +76,8 @@ function submodule_check(){
 }
 
 function app_check(){
+  appck=0
+  spec_appck=0
   for app in connectedhomeip/examples; do
     if [[ -d $app/linux/out ]]; then
       appck=1

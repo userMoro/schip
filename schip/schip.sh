@@ -51,6 +51,74 @@ function set_nodeID(){
   fi
 }
 
+function pair_controller() {
+  echo -e "\n...pairing with node '$nodeID'..."
+  ./chip-tool pairing onnetwork $nodeID 20202021 |
+  while IFS= read -r output 
+  do
+    if [[ $output == *"CHIP Error 0x00000032: Timeout"* ]]; then
+      text "" "yellow" "\nTIMEOUT"
+    elif [[ $output == *"OS Error 0x02000065: Network is unreachable"* ]]; then
+      text "" "yellow" "\nUNREACHABLE NETWORK"
+    else
+      oper="c"
+    fi
+    sleep 0.03s
+    printf "\r${spin:i++%${#spin}:1}"
+  done
+}
+
+function command_controller () {
+  while true
+  do
+    spec=""
+    text "bold" "" "\ntoggle = 1\non = 2\noff = 3\nset new nodeID / retry pairing = 4\nunpair and quit = 5\n"
+    read onoff
+    if [[ "$onoff" ==  "1" ]]; then
+      spec="onoff toggle $nodeID 1"
+    elif [[ "$onoff" == "2" ]]; then
+      spec="onoff on $nodeID 1"
+    elif [[ "$onoff" == "3" ]]; then
+      spec="onoff off $nodeID 1"
+    elif [[ "$onoff" == "5" ]]; then
+      spec="pairing unpair $nodeID"
+    fi
+    if [[ $onoff == "1" || $onoff == "2" || $onoff == "3" || $onoff == "5" ]]; then
+      echo -n "command "
+      text "italics" "" "'$spec'" "-n"
+      echo " sent"
+      eval "./chip-tool ${spec}" |
+      while IFS= read -r outputb
+      do
+        err=false
+        if [[ $outputb == *"CHIP Error 0x00000032: Timeout"* ]]; then
+          text "" "yellow" "\nTIMEOUT" 
+          err=true
+        elif [[ $outputb == *"OS Error 0x02000065: Network is unreachable"* ]]; then
+          text "" "red" "\nUNREACHABLE NETWORK"
+          err=true
+        fi
+        sleep 0.01s
+        printf "\r${spin:i++%${#spin}:1}"
+      done
+      if [[ $err == false ]]; then
+        text "" "green" "\nDONE\n"
+      fi
+    elif [[ $onoff == "4" ]]; then
+      set_nodeID
+      echo ""
+      read -p "retry pairing? (y)" retry
+      if [[ $retry == "y" ]]; then
+        pair_controller
+      fi
+    fi
+    if [[ $onoff == "5" ]]; then
+      echo ""
+      break
+    fi
+  done
+}
+
 function repo_clone(){
   text "" "\n!the chip folder is missing!\n\n" "red" ""
     read -p "clone official connectedhomeip repository from github? (y)" build
@@ -70,6 +138,31 @@ function repo_clone(){
     fi
 }
 
+function app_list(){
+  cd examples
+    spec_appck=0
+    n=0
+    for dir in */; do
+      n=$((n+1))
+      sleep 0.02s
+      app_check $dir
+      if [[ $1 == "green" && $spec_appck -eq 1 ]]; then
+        text "" "" "\n$n = $dir" "-n"
+      elif [[ $1 == "all" ]]; then
+        text "" "" "-$dir" "-n"
+      fi
+      if [[ $spec_appck == 0 ]]; then
+        if [[ $1 == "all" ]]; then
+          text "" "red" " ✗"
+        fi
+      else
+        text "" "green" " ✓"
+        spec_appck=1
+      fi
+    done
+    n=0
+}
+
 while getopts "ihbcdualps" opt; do
   case ${opt} in
     h)
@@ -80,9 +173,9 @@ while getopts "ihbcdualps" opt; do
       ;;
     u)
       if [[ "$2" == "-c" || "$2" == "--controller" ]]; then
-          schip_update_all "controller"
+          schip_update "controller"
       elif [[ "$2" == "-d" || "$2" == "--device" ]]; then
-          schip_update_all "device"
+          schip_update "device"
       else
           echo -e "\nInvalid argument for -u: usage: schip -u [tag]"
           echo -e "try 'schip -h' / 'schip --help'\n"
@@ -93,18 +186,39 @@ while getopts "ihbcdualps" opt; do
       if [[ "$2" == "-c" || "$2" == "--controller" ]]; then
         if [[ $3 == "-l" || $3 == "--log" ]]; then
           schip_pair_controller "log"
-        elif [[ -z "$3" ]]; then
-          schip_pair_controller
+          if [[ -d $5 && -d $6 ]]; then 
+            if [[ $4 =~ ^[0-9]{4} && $5 =~ ^[0-9]{8}$ && $6 =~ ^[0-9]{4} ]]; then
+              schip_pair_controller "log" $4 $5 $6
+            else
+              echo -e "\nInvalid argument for -p -c -l [nodeID] [pinCode] [discriminator]: \nnodeID and discriminator have to be a 4 digit number; pinCode has to be a 8 digit number"
+              echo -e "try 'schip -h' / 'schip --help'\n"
+              exit 1
+            fi
+          elif [[ -d $4 && -z $5 ]]; then
+            if [[ $4 =~ ^[0-9]{4}$ ]]; then
+              schip_pair_controller "log" $4
+            else
+              echo -e "\nInvalid argument for -p -c -l [nodeID]: nodeID has to be a 4 digit number"
+              echo -e "try 'schip -h' / 'schip --help'\n"
+              exit 1
+            fi
+          fi
+        elif [[ -d $3 && $3 != "-l" && $3 != "--log" && $3 =~ ^[0-9]{4} ]]; then
+          schip_pair_controller $3
         else 
-          echo -e "\nInvalid argument for -p -c: usage: schip -p -c [tag]"
+          echo -e "\nInvalid argument for -p -c [nodeID]: nodeID has to be a 4 digit number"
           echo -e "try 'schip -h' / 'schip --help'\n"
           exit 1
+        elif [[ -z "$3" ]]; then
+          schip_pair_controller
         fi
       elif [[ "$2" == "-d" || "$2" == "--device" ]]; then
-        if [[ $3 == "-l" || $3 == "--log" ]]; then
-          schip_pair_device "log"
-        elif [[ -z "$3" ]]; then
-          schip_pair_device
+        if [[ $3 == "-l" || $3 == "--led" ]]; then
+          schip_pair_device "led"
+        elif [[ $3 == "-n" || $3 == "--normal" ]]; then 
+          schip_pair_device "normal"
+        elif [[ "$3" == "-s" || $3 == "--select" ]]; then
+          schip_pair_device_select
         else
           echo -e "\nInvalid argument for -p -d: usage: schip -p -d [tag]"
           echo -e "try 'schip -h' / 'schip --help'\n"
