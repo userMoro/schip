@@ -51,7 +51,7 @@ function set_nodeID(){
   fi
 }
 
-function pair_controller(){
+function read_output(){
   while IFS= read -r output 
   do
     if [[ $output == *"CHIP Error 0x00000032: Timeout"* ]]; then
@@ -65,31 +65,32 @@ function pair_controller(){
       oper="c"
     fi
     sleep 0.03s
-    if [[ $1 == "log" ]]; then 
+    if [[ $2 == "log" ]]; then 
       echo $output 
     else
       printf "\r${spin:i++%${#spin}:1}"
     fi
   done
-  if [[ $end == "" ]]; then
+  if [[ $end == "" && $1 == "pair" ]]; then
     text "" "green" "\nPAIRING COMPLETED\n"
-  else
+  elif [[ $end == "" && $1 == "command" ]]; then
+    text "" "green" "\ncommand sent\n"
+  elif [[ $end != "" ]]; then
     text "" "yellow" "\n$end"
   fi
 }
 
 function pair_controller_manage() {
-  end=""
   echo -e "\n...pairing with node '$nodeID'..."
   if [[ $1 == "log" ]]; then
     ./chip-tool pairing onnetwork $nodeID 20202021 |
-    pair_controller "log"
+    read_output "pair" "log"
   elif [[ $3 == "log" ]]; then
     ./chip-tool pairing onnetwork-long $nodeID $1 $2 |
-    pair_controller "log"
+    read_output "pair" "log"
   else
     ./chip-tool pairing onnetwork $nodeID 20202021 |
-    pair_controller
+    read_output "pair"
   fi
 }
 
@@ -113,28 +114,22 @@ function command_controller () {
       text "italics" "" "'$spec'" "-n"
       echo " sent"
       eval "./chip-tool ${spec}" |
-      while IFS= read -r outputb
-      do
-        err=false
-        if [[ $outputb == *"CHIP Error 0x00000032: Timeout"* ]]; then
-          text "" "yellow" "\nTIMEOUT" 
-          err=true
-        elif [[ $outputb == *"OS Error 0x02000065: Network is unreachable"* ]]; then
-          text "" "red" "\nUNREACHABLE NETWORK"
-          err=true
-        fi
-        sleep 0.01s
-        printf "\r${spin:i++%${#spin}:1}"
-      done
-      if [[ $err == false ]]; then
-        text "" "green" "\nDONE\n"
+      if [[ $1 == "log" ]]; then
+        read_output "command" "log"
+      else 
+        read_output "command"
       fi
     elif [[ $onoff == "4" ]]; then
       set_nodeID
       echo ""
       read -p "retry pairing? (y)" retry
       if [[ $retry == "y" ]]; then
-        pair_controller
+        ./chip-tool pairing onnetwork $nodeID 20202021 |
+        if [[ $1 == "log" ]]; then
+          read_output "pair" "log"
+        else 
+          read_output "pair"
+        fi
       fi
     fi
     if [[ $onoff == "5" ]]; then
@@ -188,10 +183,12 @@ function app_list(){
     n=0
 }
 
-while getopts "ihbcdualps" opt; do
+#
+while getopts "hbup" opt; do
   case ${opt} in
-    h)
-      schip_help
+    h | help) 
+      schip_help 
+      exit
       ;;
     b)
       schip_begin
@@ -248,6 +245,10 @@ while getopts "ihbcdualps" opt; do
           exit 1
       fi
       ;;
+    *)
+      echo "Invalid option: -$option $OPTARG"
+      exit 1
+      ;;
       esac
     done
 
@@ -269,3 +270,4 @@ while getopts "ihbcdualps" opt; do
 
 #trovare modo per fare lista di sottomoduli mancanti
 
+#

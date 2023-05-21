@@ -131,7 +131,6 @@ function schip_begin { # implementazione della funzione schip -b
 
   #checklist
   echo -e "\nTo use Matter to control a device running an example application, you need a functioning controller and device."
-  text "bold" "" "\nThe prerequisite needed to build an example app (on Raspberry Pi device) and a controller (Linux) to use it are:\n"
   text "bold" "" "The prerequisite needed to build an example app (on Raspberry Pi device) and a controller (Linux) are:\n"
 
   text "italics" "" "- Ubuntu 20.04/22.04 LTS" "-n"
