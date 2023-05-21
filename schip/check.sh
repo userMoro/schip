@@ -78,7 +78,12 @@ function submodule_check(){
 function app_check(){
   appck=0
   spec_appck=0
-  for app in connectedhomeip/examples; do
+  current_directory=$(basename "$(pwd)")
+  if [[ $current_directory != "examples" ]]; then
+    pwd 
+    cd examples
+  fi
+  for app in */; do
     if [[ -d $app/linux/out ]]; then
       appck=1
     fi
