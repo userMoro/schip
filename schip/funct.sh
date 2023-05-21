@@ -194,10 +194,12 @@ function schip_begin { # implementazione della funzione schip -b
 
   text "italics" "" "- Some executable example apps (for raspberry device) builded" "-n"
   if [[ $appck -eq 1 ]]; then
-    text "bold" "green" " ✓"
+    if [[ $spec_appck -eq 1 ]]; then
+      text "bold" "green" " ✓"
+    else 
+      text "bold" "yellow" " ✓"
+    fi
   elif [[ $appck -eq 0 ]]; then
-    text "bold" "yellow" " ✓"
-  else 
     text "bold" "red" " ✗"
   fi
   echo -e ""
