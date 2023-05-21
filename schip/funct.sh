@@ -510,3 +510,4 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
   fi
 }
 
+#riclonare a provare su raspberry

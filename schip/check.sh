@@ -79,8 +79,10 @@ function app_check(){
   appck=0
   spec_appck=0
   for app in connectedhomeip/examples; do
+    echo $app "tutte"
     if [[ -d $app/linux/out ]]; then
       appck=1
+      echo $app "presente"
     fi
   done
   if [[ -d $1/linux/out ]]; then
