@@ -80,6 +80,7 @@ function app_check(){
   spec_appck=0
   current_directory=$(basename "$(pwd)")
   if [[ $current_directory != "examples" ]]; then
+    pwd 
     cd examples
   fi
   for app in */; do
