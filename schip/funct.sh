@@ -121,13 +121,14 @@ function schip_help() { # implementazione della funzione schip -h
 
 function schip_begin { # implementazione della funzione schip -b 
   #controllo dprerequisiti
+  echo -e "\nChecking prerequisites...\n"
   cd ../connectedhomeip
   os_check
   dep_check "all"
   repo_check
   chiptool_check
   submodule_check
-  app_check 
+  app_check "lighting-app"
 
   #checklist
   echo -e "\nTo use Matter to control a device running an example application, you need a functioning controller and device."
@@ -192,9 +193,9 @@ function schip_begin { # implementazione della funzione schip -b
   echo ""
 
   text "italics" "" "- Some executable example apps (for raspberry device) builded" "-n"
-  if [[ $appck -eq 2 ]]; then
+  if [[ $appck -eq 1 ]]; then
     text "bold" "green" " ✓"
-  elif [[ $appck -eq 1 ]]; then
+  elif [[ $appck -eq 0 ]]; then
     text "bold" "yellow" " ✓"
   else 
     text "bold" "red" " ✗"
@@ -202,7 +203,7 @@ function schip_begin { # implementazione della funzione schip -b
   echo -e ""
 
   text "italics" "" "- Lighting-app example (for raspberry device) builded" "-n"
-  if [[ $appck -eq 2 ]]; then
+  if [[ $spec_appck -eq 1 ]]; then
     text "bold" "green" " ✓"
   else
     text "bold" "red" " ✗"
@@ -340,7 +341,7 @@ function schip_update { # implementazione della funzione schip -u -a -c
         fi
       done
       if [[ $match == false ]]; then
-        text "" "yellow" "\nno matching app found."
+        text "" "yellow" "no matching app found."
       fi
       if [[ $appck -eq 1 ]]; then
         text "" "green" "\nexecutable for lighting-app found\n"
