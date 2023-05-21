@@ -226,18 +226,16 @@ while getopts "hbup" opt; do
         fi
     # device: - / log
       elif [[ "$2" == "-d" || "$2" == "--device" ]]; then
-        if [[ -d $3 ]]; then
-          if [[ $3 == "-l" || $3 == "--log" ]]; then
-            schip_pair_device "log"
-          elif [[ "$3" == "-s" || $3 == "--select" ]]; then
-            schip_pair_device_select
-          else
-            echo -e "\nInvalid argument for -p -d: usage: schip -p -d [tag]"
-            echo -e "try 'schip -h' / 'schip --help'\n"
-            exit 1
-          fi
-        else
+        if [[ $3 == "-l" || $3 == "--log" ]]; then
+          schip_pair_device "log"
+        elif [[ "$3" == "-s" || $3 == "--select" ]]; then
+          schip_pair_device_select
+        elif [[ -z $3 ]]; then
           schip_pair_device
+        else
+          echo -e "\nInvalid argument for -p -d: usage: schip -p -d [tag]"
+          echo -e "try 'schip -h' / 'schip --help'\n"
+          exit 1
         fi
       else
           echo -e "\nInvalid argument for -p: usage: schip -p [tag] <options>"
