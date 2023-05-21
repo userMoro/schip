@@ -328,6 +328,11 @@ function schip_update { # implementazione della funzione schip -u -a -c
           app_check "lighting-app"
         fi
       fi
+      if [[ $appck -eq 1 ]]; then
+        text "" "green" "\nexecutable for lighting-app found\n"
+      else 
+        text "" "yellow" "executable for lighting-app not found\n"
+      fi
       echo -e "\n(not adviced)"
       text "bold" "" "If you want to build any other app, enter the full name here: " "-n"
       read newapp
@@ -343,15 +348,13 @@ function schip_update { # implementazione della funzione schip -u -a -c
         fi
       done
       if [[ $match == false ]]; then
-        text "" "yellow" "no matching app found."
-      fi
-      if [[ $appck -eq 1 ]]; then
-        text "" "green" "\nexecutable for lighting-app found\n"
+        text "" "yellow" "no matching app found.\n"
       fi
     fi
 
       #final considerations
     if [[ ( $1 == "device" && $spec_appck == 1 ) || ( $1 == "controller" && $chiptoolck == 1 ) && $submoduleck -eq 1 && $some_missing == false ]]; then
+      text "bold" "green" "v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v"
       text "" "" "It seems like you are ready to go. You should be able to use the $1 with:"
       if [[ $1 == "controller" ]]; then
         text "bold" "" "schip -p -d\n"
@@ -429,7 +432,7 @@ function schip_pair_controller { # implementazione dellla funzione schip -p -c
 function schip_pair_device_select { # implementazione della funzione schip -p -d -s
   text "" "blue" "\nBe sure to have all the prerequisites for the correct functioning of the device before proceding using " "-n"
   text "bold" "" "schip -b" ""
-  cd ../connectedhomeip
+  cd ../connectedhomeip/examples
   echo -e "\nSeleziona l'esempio che vuoi utilizzare:\n"
   ex=0
   while true
@@ -447,7 +450,7 @@ function schip_pair_device_select { # implementazione della funzione schip -p -d
       n=1
       for dir in */
       do
-        if [ "$n" == "$num" ]; then
+        if [ $n -eq $num ]; then
           app=${dir%/}
           echo -e "\n'$app' selected\n"
           ex=1
@@ -455,39 +458,43 @@ function schip_pair_device_select { # implementazione della funzione schip -p -d
         fi
         ((n++))
       done
-      if [[ "$ex" == 1 ]]; then
-        break
+      if [[ $ex -eq 1 ]]; then
+        cd $app/linux
+        ./out/debug/chip-$app --ble-device 0 |
+        while IFS= read -r output
+        do
+          echo $output
+        done
       fi
-      echo -e "\n!bad input!\n"
-      fi
+    fi
   done
 }
 
 function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
 # device: - / log
+  echo $1
   text "" "blue" "\nBe sure to have all the prerequisites for the correct functioning of the controller before proceding using " "-n"
   text "bold" "" "schip -b" ""
+  cd ../connectedhomeip/examples
   app_check "lighting-app"
-
-  if [[ $1 == "log" ]]; then 
-    echo "log"
-  else 
-    if [ -d "/sys/class/gpio/gpio17" ]; then
-      exist=1
-    else
-      exist=0
-    fi
-    if [ "$exist" -eq 0 ]; then
-      cd /sys/class/gpio
-      echo 17 > export
-      cd gpio17
-      echo out > direction
-    fi
-  fi
-
   if [[ $spec_appck -eq 1 ]]; then
+    if [[ $1 != "log" ]]; then
+      if [ -d "/sys/class/gpio/gpio17" ]; then
+        exist=1
+      else
+        exist=0
+      fi
+      if [ "$exist" -eq 0 ]; then
+        cd /sys/class/gpio
+        echo 17 > export
+        cd gpio17
+        echo out > direction
+      fi
+    fi
     echo -e "\nwaiting for incoming messages..."
-    ./out/debug/chip-$app --ble-device 0 |
+    echo -e "attach a let to the pin 17 to use it\n"
+    cd lighting-app/linux
+    ./out/debug/chip-lighting-app --ble-device 0 |
     while IFS= read -r output
     do
       if [[ $1 == "log" ]]; then 
@@ -504,9 +511,8 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
         fi
       fi
     done
-  else
-    text "" "yellow" "\n'lighting-app' executable not found. Consider updating using " "-n" 
+  else 
+    text "" "red" "\n'lighting-app' executable not found. Build it using " "-n" 
     text "bold" "" "schip -u -d\n"
   fi
 }
-
