@@ -432,7 +432,7 @@ function schip_pair_controller { # implementazione dellla funzione schip -p -c
 function schip_pair_device_select { # implementazione della funzione schip -p -d -s
   text "" "blue" "\nBe sure to have all the prerequisites for the correct functioning of the device before proceding using " "-n"
   text "bold" "" "schip -b" ""
-  cd ../connectedhomeip
+  cd ../connectedhomeip/examples
   echo -e "\nSeleziona l'esempio che vuoi utilizzare:\n"
   ex=0
   while true
@@ -458,13 +458,15 @@ function schip_pair_device_select { # implementazione della funzione schip -p -d
         fi
         ((n++))
       done
-      if [[ "$ex" == 1 ]]; then
-        ./out/debug/chip-lighting-app --ble-device 0 |
+      if [[ $ex -eq 1 ]]; then
+        cd $app/linux
+        ./out/debug/chip-$app --ble-device 0 |
         while IFS= read -r output
         do
           echo $output
         done
       fi
+    fi
   done
 }
 
@@ -490,6 +492,7 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
     fi
     echo -e "\nwaiting for incoming messages..."
     echo -e "attach a let to the pin 17 to use it\n"
+    cd lighting-app/linux
     ./out/debug/chip-lighting-app --ble-device 0 |
     while IFS= read -r output
     do
@@ -507,7 +510,6 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
         fi
       fi
     done
-  else
   else 
     text "" "red" "\n'lighting-app' executable not found. Build it using " "-n" 
     text "bold" "" "schip -u -d\n"
