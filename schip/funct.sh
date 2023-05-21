@@ -328,6 +328,11 @@ function schip_update { # implementazione della funzione schip -u -a -c
           app_check "lighting-app"
         fi
       fi
+      if [[ $appck -eq 1 ]]; then
+        text "" "green" "\nexecutable for lighting-app found\n"
+      else 
+        text "" "yellow" "executable for lighting-app not found\n"
+      fi
       echo -e "\n(not adviced)"
       text "bold" "" "If you want to build any other app, enter the full name here: " "-n"
       read newapp
@@ -344,9 +349,6 @@ function schip_update { # implementazione della funzione schip -u -a -c
       done
       if [[ $match == false ]]; then
         text "" "yellow" "no matching app found."
-      fi
-      if [[ $appck -eq 1 ]]; then
-        text "" "green" "\nexecutable for lighting-app found\n"
       fi
     fi
 

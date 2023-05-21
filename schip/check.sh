@@ -78,7 +78,10 @@ function submodule_check(){
 function app_check(){
   appck=0
   spec_appck=0
-  cd examples
+  current_directory=$(basename "$(pwd)")
+  if [[ $current_directory != "examples" ]]; then
+    cd examples
+  fi
   for app in */; do
     if [[ -d $app/linux/out ]]; then
       appck=1
