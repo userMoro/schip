@@ -498,7 +498,6 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
     while IFS= read -r output
     do
       if [[ $1 == "log" ]]; then 
-        echo "ciao"
         echo $output
       else
         if [[ $output == *"On Command"* ]]; then
