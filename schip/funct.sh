@@ -491,6 +491,7 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
         echo out > direction
       fi
     fi
+    echo -e "\nReady for pairing or receiving commands"
     echo -e "\nwaiting for incoming messages..."
     echo -e "attach a let to the pin 17 to use it\n"
     cd lighting-app/linux
@@ -519,6 +520,8 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
           elif [[ $lastone == false ]]; then
             echo "OFF"
           fi
+        elif [[ $output == *"Found matching exchange"* ]]; then
+          text "" "green" "pairing successful\n"
         fi
       fi
     done
