@@ -64,10 +64,10 @@ function read_output(){
     else
       oper="c"
     fi
-    sleep 0.03s
     if [[ $2 == "log" ]]; then 
       echo $output 
     else
+      sleep 0.03s
       printf "\r${spin:i++%${#spin}:1}"
     fi
   done
@@ -83,7 +83,6 @@ function read_output(){
 function pair_controller_manage() {
   echo -e "\n...pairing with node '$nodeID'..."
   if [[ $1 == "log" ]]; then
-    echo "log normale"
     ./chip-tool pairing onnetwork $nodeID 20202021 |
     read_output "pair" "log"
   elif [[ $3 == "log" ]]; then
@@ -131,6 +130,8 @@ function command_controller () {
         else 
           read_output "pair"
         fi
+      else 
+        continue
       fi
     fi
     if [[ $onoff == "5" ]]; then
