@@ -83,6 +83,7 @@ function read_output(){
 function pair_controller_manage() {
   echo -e "\n...pairing with node '$nodeID'..."
   if [[ $1 == "log" ]]; then
+    echo "log normale"
     ./chip-tool pairing onnetwork $nodeID 20202021 |
     read_output "pair" "log"
   elif [[ $3 == "log" ]]; then
@@ -207,22 +208,22 @@ while getopts "hbup" opt; do
     p)
     # controller: - / nodeID / nodeID, log / nodeID, pincode, discriminator / nodeID, pincode, discriminator, log 
       if [[ "$2" == "-c" || "$2" == "--controller" ]]; then
-        if [[ -d $3 ]]; then
-          if [[ $3 =~ ^[0-9]{4} && -z $4 ]]; then
-            schip_pair_controller $3
-          elif [[ $3 =~ ^[0-9]{4} && ( $4 == "-l" || $4 == "--log" ) ]]; then
-            schip_pair_controller $3 "log"
-          elif [[ $3 =~ ^[0-9]{4} && $4 =~ ^[0-9]{8} && $5 =~ ^[0-9]{4} && ( ( $6 != "-l" || $6 != "--log") || -z $6 ) ]]; then
-            schip_pair_controller $3 $4 $5
-          elif [[ $3 =~ ^[0-9]{4} && $4 =~ ^[0-9]{8} && $5 =~ ^[0-9]{4} && ( $6 == "-l" || $6 == "--log" ) ]]; then
-            schip_pair_controller $3 $4 $5 "log"
-          else
-            echo -e "\nInvalid argument for -p -c / --pair --controller"
-            echo -e "try 'schip -h' / 'schip --help'\n"
-            exit 1
-          fi
-        else 
+        if [[ $3 =~ ^[0-9]{4} && -z $4 ]]; then
+          schip_pair_controller $3
+        elif [[ $3 =~ ^[0-9]{4} && ( $4 == "-l" || $4 == "--log" ) ]]; then
+          schip_pair_controller $3 "log"
+        elif [[ $3 =~ ^[0-9]{4} && $4 =~ ^[0-9]{8} && $5 =~ ^[0-9]{4} && ( ( $6 != "-l" || $6 != "--log") || -z $6 ) ]]; then
+          schip_pair_controller $3 $4 $5
+        elif [[ $3 =~ ^[0-9]{4} && $4 =~ ^[0-9]{8} && $5 =~ ^[0-9]{4} && ( $6 == "-l" || $6 == "--log" ) ]]; then
+          schip_pair_controller $3 $4 $5 "log"
+        elif [[ -z $3 ]]; then
           schip_pair_controller
+        else
+          echo -e "\nInvalid argument for -p -c / --pair --controller"
+          echo -e "try 'schip -h' / 'schip --help'\n"
+          exit 1
+        fi
+          
         fi
     # device: - / log
       elif [[ "$2" == "-d" || "$2" == "--device" ]]; then
@@ -250,22 +251,3 @@ while getopts "hbup" opt; do
       esac
     done
 
-#schip -u -a -c / --update --all --controller : (fa update e controlla tutti i prerequisiti e per controller)
-
-#schip -u -a -d / --update --all --device (fa update e controlla tutti i prerequisiti per device
-
-#schip -u -s / --update --submodules : (fa update dei sottomoduli se repo esiste)
-
-#schip -u -l / --u --libreries : (fa update delle librerie necessarie e controlla esistenza repo)
-
-#schip -p -c [nodeID] / --pair --controller [nodeID] : (se prerequisiti presenti prova il pairing con [nodeID], pincode 20202021, discriminator 3840; a seconda del risultato printa azioni consigliate)
-
-#schip -p -c [nodeID] [pinCode] [discriminator] / --pair --controller [nodeID] [pinCode] [discriminator] : ( se prerequisiti presenti prova il pairing con il nodo dato, [pinCode], [discriminator]; a seconda del risultato printa azioni consigliate)
-
-#schip -p -d / --pair --device : (lista applicazioni che possono essere eseguite, fa selezioinare applicazione da eseguire, controlla esistenza file eseguibili: se non esiste eseguibile per app scelta chiede se crearlo e poi lo esegue; per lighting-app permette di scegliere se operare sul led, per le altre mostra i log)
-
-
-
-#trovare modo per fare lista di sottomoduli mancanti
-
-#
