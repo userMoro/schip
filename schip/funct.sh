@@ -500,11 +500,11 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
       if [[ $1 == "log" ]]; then 
         echo $output
       else
-        if [[ $output == *"On Command"* ]]; then
+        if [[ $output == *"On/Off set value: 1 1"* ]]; then 
           cd /sys/class/gpio/gpio17
           echo 1 >value
           echo "ON received"
-        elif [[ $output == *"Off Command"* ]]; then
+        elif [[ $output == *"On/Off set value: 1 0"* ]]; then
           cd /sys/class/gpio/gpio17
           echo 0 >value
           echo "OFF received"
