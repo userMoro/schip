@@ -216,6 +216,8 @@ while getopts "hbup" opt; do
           schip_pair_controller $3 $4 $5
         elif [[ $3 =~ ^[0-9]{4} && $4 =~ ^[0-9]{8} && $5 =~ ^[0-9]{4} && ( $6 == "-l" || $6 == "--log" ) ]]; then
           schip_pair_controller $3 $4 $5 "log"
+        elif [[ $3 == "-l" || $3 == "--log" ]]; then 
+          schip_pair_controller "log"
         elif [[ -z $3 ]]; then
           schip_pair_controller
         else
@@ -223,8 +225,7 @@ while getopts "hbup" opt; do
           echo -e "try 'schip -h' / 'schip --help'\n"
           exit 1
         fi
-          
-        fi
+
     # device: - / log
       elif [[ "$2" == "-d" || "$2" == "--device" ]]; then
         if [[ $3 == "-l" || $3 == "--log" ]]; then
@@ -250,4 +251,3 @@ while getopts "hbup" opt; do
       ;;
       esac
     done
-
