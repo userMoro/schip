@@ -494,20 +494,31 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
     echo -e "\nwaiting for incoming messages..."
     echo -e "attach a let to the pin 17 to use it\n"
     cd lighting-app/linux
+    lastone=""
     ./out/debug/chip-lighting-app --ble-device 0 |
     while IFS= read -r output
     do
       if [[ $1 == "log" ]]; then 
         echo $output
       else
-        if [[ $output == *"On/Off set value: 1 1"* || $output == *"On Command"* ]]; then 
+        if [[ $output == *"Toggle on/off from 0 to 1"* ]]; then 
           cd /sys/class/gpio/gpio17
           echo 1 >value
-          echo "ON received"
-        elif [[ $output == *"On/Off set value: 1 0"* || $output == *"Off Command"* ]]; then
+          echo -n "switching OFF -> "
+          text "bold" "" "ON"
+          lastone=true
+        elif [[ $output == *"Toggle on/off from 1 to 0"* ]]; then
           cd /sys/class/gpio/gpio17
           echo 0 >value
-          echo "OFF received"
+          echo -n "switching ON -> "
+          text "bold" "" "OFF"
+          lastone=false
+        elif [[ $output == *"On/off already set to new value"* ]];then
+          if [[ $lastone == true ]]; then
+            echo "ON"
+          elif [[ $lastone == false ]]; then
+            echo "OFF"
+          fi
         fi
       fi
     done
