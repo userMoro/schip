@@ -520,7 +520,7 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
           elif [[ $lastone == false ]]; then
             echo "OFF"
           fi
-        elif [[ $output == *"Found matching exchange"* ]]; then
+        elif [[ $output == *"Commissioning complete, notify platform driver to persist network credentials."* ]]; then
           text "" "green" "pairing successful\n"
         fi
       fi
