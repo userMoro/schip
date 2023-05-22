@@ -67,7 +67,7 @@ function read_output(){
     if [[ $2 == "log" ]]; then 
       echo $output 
     else
-      sleep 0.005
+      sleep 0.003
       printf "\r${spin:i++%${#spin}:1}"
     fi
   done
