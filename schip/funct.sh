@@ -422,7 +422,7 @@ function schip_pair_controller { # implementazione dellla funzione schip -p -c
           fi
         fi
         if [[ $retry != "y" ]]; then
-          break
+          oper="c"
         fi
       done
     fi
