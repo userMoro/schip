@@ -221,7 +221,6 @@ function schip_begin { # implementazione della funzione schip -b
   echo -e "\n"
 
 }
-
 function schip_update { # implementazione della funzione schip -u -a -c
 
   echo -e "\n...checking prerequisites...\n"
@@ -230,7 +229,7 @@ function schip_update { # implementazione della funzione schip -u -a -c
   repo_check
   if [[ $repock -eq 0 ]]; then
     repo_clone
-    text "bold" "" "check your controller prerequisites again with 'schip -u -a -c'\n"
+    text "bold" "" "check your controller prerequisites again with 'schip -u -c'\n"
   elif [[ $repock -eq 1 ]]; then
     text "" "green" "connectedhomeip folder found\n"
 
