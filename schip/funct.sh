@@ -134,7 +134,7 @@ function schip_begin { # implementazione della funzione schip -b
   echo -e "\nTo use Matter to control a device running an example application, you need a functioning controller and device."
   text "bold" "" "The prerequisite needed to build an example app (on Raspberry Pi device) and a controller (Linux) are:\n"
 
-  text "italics" "" "- Ubuntu 20.04/22.04 LTS" "-n"
+  text "italics" "" "+ Ubuntu 20.04/22.04 LTS" "-n"
   if [[ $osck -eq 1 ]]; then
     text "bold" "green" " ✓"
   elif [[ $osck -eq 2 ]]; then
@@ -144,7 +144,7 @@ function schip_begin { # implementazione della funzione schip -b
   fi
   echo ""
 
-  text "italics" "" "- Required dependencies installed" "-n"
+  text "italics" "" "+ Required dependencies installed" "-n"
   if [[ $depck -eq 1 ]]; then
     MISSING_REQUIRED=()
     text "bold" "green" " ✓"
@@ -155,33 +155,7 @@ function schip_begin { # implementazione della funzione schip -b
   fi
   echo ""
 
-  text "italics" "" "- Connectedhomeip repository cloned" "-n"
-  if [[ $repock -eq 1 ]]; then 
-    text "bold" "green" " ✓"
-  else 
-    text "bold" "red" " ✗"
-  fi
-  echo ""
-
-  text "italics" "" "- Updated submodules" "-n"
-  if [[ $submoduleck -eq 1 ]]; then
-    text "bold" "green" " ✓"
-  elif [[ $submoduleck -eq 2 ]]; then
-    text "bold" "yellow" " ✗"
-  else
-    text "bold" "red" " ✗"
-  fi
-  echo ""
-
-  text "italics" "" "- Chip-tool executable (for controller)" "-n" 
-  if [[ $chiptoolck -eq 1 ]]; then
-    text "bold" "green" " ✓"
-  else
-    text "bold" "red" " ✗"
-  fi
-  echo ""
-
-  text "italics" "" "- RaspberryPi dependencies installed" "-n"
+  text "italics" "" "+ RaspberryPi dependencies installed" "-n"
   if [[ $depckR -eq 1 ]]; then
     MISSING_RASP=()
     text "bold" "green" " ✓"
@@ -192,7 +166,30 @@ function schip_begin { # implementazione della funzione schip -b
   fi
   echo ""
 
-  text "italics" "" "- Some executable example apps (for raspberry device) builded" "-n"
+  text "italics" "" "+ Connectedhomeip repository cloned" "-n"
+  if [[ $repock -eq 1 ]]; then 
+    text "bold" "green" " ✓"
+  else 
+    text "bold" "red" " ✗"
+  fi
+
+  text "italics" "" " - Updated submodules" "-n"
+  if [[ $submoduleck -eq 1 ]]; then
+    text "bold" "green" " ✓"
+  elif [[ $submoduleck -eq 2 ]]; then
+    text "bold" "yellow" " ✗"
+  else
+    text "bold" "red" " ✗"
+  fi
+
+  text "italics" "" " - Chip-tool executable (for controller)" "-n" 
+  if [[ $chiptoolck -eq 1 ]]; then
+    text "bold" "green" " ✓"
+  else
+    text "bold" "red" " ✗"
+  fi
+
+  text "italics" "" " - Some executable example apps (for raspberry device) builded" "-n"
   if [[ $appck -eq 1 ]]; then
     if [[ $spec_appck -eq 1 ]]; then
       text "bold" "green" " ✓"
@@ -202,9 +199,8 @@ function schip_begin { # implementazione della funzione schip -b
   elif [[ $appck -eq 0 ]]; then
     text "bold" "red" " ✗"
   fi
-  echo -e ""
 
-  text "italics" "" "- Lighting-app example (for raspberry device) builded" "-n"
+  text "italics" "" " - Lighting-app example (for raspberry device) builded" "-n"
   if [[ $spec_appck -eq 1 ]]; then
     text "bold" "green" " ✓"
   else
@@ -212,15 +208,8 @@ function schip_begin { # implementazione della funzione schip -b
   fi
   echo -e ""
 
-  text "italics" "" "- Matter environment activated" "-n"
-  if [[ $envck -eq 1 ]]; then
-    text "bold" "green" " ✓"
-  else
-    text "bold" "yellow" " ?"
-  fi
-  echo -e "\n"
-
 }
+
 function schip_update { # implementazione della funzione schip -u -a -c
 
   echo -e "\n...checking prerequisites...\n"

@@ -10,7 +10,6 @@ depckR=0
 repock=0
 chiptoolck=0
 submoduleck=0
-envck=0
 appck=0
 spec_appck=0
 
