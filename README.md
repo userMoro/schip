@@ -8,4 +8,4 @@ To use schip funtionalities you need to run ./schip.sh [...] inside the 'setup' 
 Use ./schip.sh -h to visualize all the disposable functionalities and command to execute.
 
 if you haven't cloned connectedhomeip repo yet, schip will guide you into that in the update operation.
-If you already did, place connectedhomeip in the folder 'schip', near the folder 'setup'.
+If you already did, place connectedhomeip in the folder 'schip', near the folder 'setup', then proceed with the other operations
