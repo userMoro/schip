@@ -295,6 +295,7 @@ function schip_update { # implementazione della funzione schip -u -a -c
       text "" "green" "\nDEPENDENCIES UPDATED!"
       depck=1
       sleep 1.5s
+      dep_check "all"
     fi
 
     #checking executable for controller
@@ -307,6 +308,7 @@ function schip_update { # implementazione della funzione schip -u -a -c
         read -p "build chip-tool executable? (yes)  " build
         if [[ "$build" == "yes" ]]; then
           ./gn_build.sh;
+          chiptool_check
         fi
       fi
     else #checking executable for device
