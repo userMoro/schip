@@ -3,6 +3,7 @@ To automate and simplify the process of setting up and building the matter envir
 With schip you will be able see which prerequisites are needed, which prerequisites are satisfied and finally set up and install everything you need easily.
 
 # How to use 
-if you haven't cloned connectedhomeip repo yet, clone the 'full' branch.
-If you already did, clone the 'script branch and place connectedhomeip in the same folder as the schip folder.
-Clone the repository, enter the folder and command './schip.sh -h' to have all the instructions.
+To use schip funtionalities you need to run ./schip.sh [] inside the 'setup' folder; use ./schip.sh -h to visualize all the disposable functionalities and command to execute.
+
+if you haven't cloned connectedhomeip repo yet, schip will guide you into that in the update operation.
+If you already did, place connectedhomeip in the folder 'schip', near the folder 'setup'.
