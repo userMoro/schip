@@ -4,6 +4,7 @@ With schip you will be able see which prerequisites are needed, which prerequisi
 
 # How to use 
 To use schip funtionalities you need to run ./schip.sh [...] inside the 'setup' folder; 
+
 Use ./schip.sh -h to visualize all the disposable functionalities and command to execute.
 
 if you haven't cloned connectedhomeip repo yet, schip will guide you into that in the update operation.
