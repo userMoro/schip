@@ -58,11 +58,15 @@ function chiptool_check(){
 function submodule_check(){
   num_submodules=$(git submodule status | grep -c "^ ")
   num_total_submodules=$(git submodule status | wc -l)
+  echo $num_submodules $num_total_submodules
   if [ $num_submodules -eq $num_total_submodules ]; then
     submoduleck=1
   fi
   if [[ $num_submodules != 0 && $num_submodules != $num_total_submodules ]]; then
     submoduleck=2
+  fi
+  if [[ $num_submodules -eq 0 && $num_total_submodules -eq 0 ]]; then
+    submoduleck=0
   fi
   for submodule in $(git submodule status --recursive | awk '{print $2}')
   do
