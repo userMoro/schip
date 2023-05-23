@@ -142,11 +142,11 @@ function command_controller () {
 }
 
 function repo_clone(){
-  text "" "\n!the chip folder is missing!\n\n" "red" ""
+  text "" "red" "\n!the chip folder is missing!\n\n" ""
     read -p "clone official connectedhomeip repository from github? (y)" build
     if [ "$build" == "y" ]; then
       echo -e "\nthis operation may take a while and will require a considerable amount of disk space."
-      text "bold" "continue? (y)\n" "yellow" ""
+      text "bold" "" "continue? (y)\n" ""
       read confirm
       if [[ $confirm == "y" ]]; then
         cd ..
