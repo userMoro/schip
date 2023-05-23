@@ -149,13 +149,12 @@ function repo_clone(){
       text "bold" "" "continue? (y)\n" ""
       read confirm
       if [[ $confirm == "y" ]]; then
-        cd ..
         git clone https://github.com/project-chip/connectedhomeip.git;
-        text "bold" "\nCONNECTEDHOMEIP CLONED\n\n" "green" ""
+        text "bold" "green" "\nCONNECTEDHOMEIP CLONED\n" ""
         cd connectedhomeip
         echo -e "...checking out at v1.0.0...\n"
         git checkout v1.0.0;
-        text "bold" "DONE\n\n" "green" ""
+        text "bold" "green" "\nDONE\n" ""
       fi
     fi
 }

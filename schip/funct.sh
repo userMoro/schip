@@ -263,7 +263,7 @@ function schip_update { # implementazione della funzione schip -u -a -c
     if [[ $submoduleck -eq 1 ]]; then
       text "" "green" "\nall submodules already up to date\n"
     elif [[ $submoduleck -eq 0 ]]; then
-      text "" "red" "y\nou are missing all the required submodules!\n"
+      text "" "red" "\nyou are missing all the required submodules!\n"
     else 
       text "" "\nyellow" "some submodules are missing:\n"
       for i in "${MISSING_SUBMODULES[@]}"; do
