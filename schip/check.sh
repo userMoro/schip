@@ -45,8 +45,8 @@ function repo_check(){
   cd ..
   if [ -d connectedhomeip ]; then
     repock=1
+    cd connectedhomeip
   fi
-  cd connectedhomeip
 }
 
 function chiptool_check(){
