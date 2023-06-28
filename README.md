@@ -13,4 +13,6 @@ If you already did, place connectedhomeip in the folder 'schip', near the folder
 
 # More
 After building an app to use (for device or controller) using "./schip.sh -u -d/-c", a copy will be placed in the "executables" folder.
-You can then decide use those executables directly from there. To check the usage of the executables, execute the file without arguments.
+
+You can then decide to use those executables directly from there. 
+To check the usage of the executables, execute the file without arguments.
