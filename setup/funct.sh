@@ -286,7 +286,6 @@ function schip_update { # implementazione della funzione schip -u -a -c
     #checking executable for controller
     if [[ $1 == "controller" ]]; then
       chiptool_check
-      pwd
       if [[ $chiptoolck -eq 1 ]]; then
         text "" "green" "\nchip-tool executable found\n"
       else

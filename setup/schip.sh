@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if [[ -d ../executables ]]; then
+  echo
+else
+  cd ..
+  mkdir executables
+  cd setup
+fi
+
 . ./colors.sh
 . ./check.sh
 . ./funct.sh
