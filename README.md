@@ -10,3 +10,7 @@ Use ./schip.sh -h to visualize all the disposable functionalities and command to
 
 if you haven't cloned connectedhomeip repo yet, schip will guide you into that in the update operation.
 If you already did, place connectedhomeip in the folder 'schip', near the folder 'setup', before preceeding with other operations
+
+# More
+After building an app to use (for device or controller) using "./schip.sh -u -d/-c", a copy will be placed in the "executables" folder.
+You can then decide use those executables directly from there. To check the usage of the executables, execute the file without arguments.
