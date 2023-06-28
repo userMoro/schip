@@ -165,6 +165,7 @@ function app_list(){
     for dir in */; do
       n=$((n+1))
       sleep 0.02s
+      dir=${dir%/}
       app_check $dir
       if [[ $1 == "green" && $spec_appck -eq 1 ]]; then
         text "" "" "\n$n = $dir" "-n"

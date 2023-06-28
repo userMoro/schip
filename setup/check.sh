@@ -50,7 +50,7 @@ function repo_check(){
 }
 
 function chiptool_check(){
-  if [ -d out ]; then
+  if [ -f out/debug/standalone/chip-tool ]; then
     chiptoolck=1
   fi
 }
@@ -82,16 +82,23 @@ function app_check(){
   appck=0
   spec_appck=0
   current_directory=$(basename "$(pwd)")
-  if [[ $current_directory != "examples" ]]; then
-    pwd 
+  if [[ $current_directory == "linux" ]]; then
+    cd ..
+  elif [[ $current_directory != "examples" ]]; then
     cd examples
   fi
   for app in */; do
-    if [[ -d $app/linux/out ]]; then
+    cd $app
+    if [[ -f "linux/out/debug/chip-$app" ]]; then
       appck=1
     fi
+    cd ..
   done
-  if [[ -d $1/linux/out ]]; then
+  if [[ $current_directory != "$1" ]]; then
+    cd $1
+  fi
+  if [[ -f "linux/out/debug/chip-$1" ]]; then
     spec_appck=1
   fi
+  cd ..
 }

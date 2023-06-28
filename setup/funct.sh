@@ -253,11 +253,6 @@ function schip_update { # implementazione della funzione schip -u -a -c
       text "" "green" "\nall submodules already up to date\n"
     elif [[ $submoduleck -eq 0 ]]; then
       text "" "red" "\nyou are missing all the required submodules!\n"
-    else 
-      text "" "\nyellow" "some submodules are missing:\n"
-      for i in "${MISSING_SUBMODULES[@]}"; do
-        text "" "" "-$i"
-      done
     fi
 
     #considerations
@@ -285,11 +280,13 @@ function schip_update { # implementazione della funzione schip -u -a -c
       depck=1
       sleep 1.5s
       dep_check "all"
+      submodule_check
     fi
 
     #checking executable for controller
     if [[ $1 == "controller" ]]; then
       chiptool_check
+      pwd
       if [[ $chiptoolck -eq 1 ]]; then
         text "" "green" "\nchip-tool executable found\n"
       else
@@ -297,6 +294,7 @@ function schip_update { # implementazione della funzione schip -u -a -c
         read -p "build chip-tool executable? (yes)  " build
         if [[ "$build" == "yes" ]]; then
           ./gn_build.sh;
+          cp ./out/debug/standalone/chip-tool ../executables
           chiptool_check
         fi
       fi
@@ -315,10 +313,11 @@ function schip_update { # implementazione della funzione schip -u -a -c
           source third_party/connectedhomeip/scripts/activate.sh;
           gn gen out/debug;
           ninja -C out/debug;
+          cp ./out/debug/chip-lighting-app ../../../../executables
           app_check "lighting-app"
         fi
       fi
-      if [[ $appck -eq 1 ]]; then
+      if [[ $spec_appck -eq 1 ]]; then
         text "" "green" "\nexecutable for lighting-app found\n"
       else 
         text "" "yellow" "executable for lighting-app not found\n"
@@ -334,6 +333,7 @@ function schip_update { # implementazione della funzione schip -u -a -c
           source third_party/connectedhomeip/scripts/activate.sh;
           gn gen out/debug;
           ninja -C out/debug;
+          cp ./out/debug/chip-$newapp ../../../../executables
           app_check $newapp
         fi
       done
@@ -471,19 +471,27 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
     if [[ $1 != "log" ]]; then
       if [ -d "/sys/class/gpio/gpio17" ]; then
         exist=1
+        echo -e "attach a led to the pin 17 to use it\n"
       else
         exist=0
       fi
       if [ "$exist" -eq 0 ]; then
-        cd /sys/class/gpio
-        echo 17 > export
-        cd gpio17
-        echo out > direction
+        model=$(tr -d '\0' </sys/firmware/devicetree/base/model)
+        if [[ $model == *"Raspberry Pi"* ]]; then
+          cd /sys/class/gpio
+          echo 17 > export
+          cd gpio17
+          echo out > direction
+          exist=1
+          echo -e "attach a led to the pin 17 to use it\n"
+        else 
+          text "" "yellow" "\nled functionality not disposable"
+          text "" "yellow" "(you may be not on a Raspberry or not dispose of "GPIO" functionality)"
+        fi
       fi
     fi
     echo -e "\nReady for pairing or receiving commands"
     echo -e "\nwaiting for incoming messages..."
-    echo -e "attach a let to the pin 17 to use it\n"
     cd lighting-app/linux
     lastone=""
     ./out/debug/chip-lighting-app --ble-device 0 |
@@ -493,14 +501,18 @@ function schip_pair_device(){ # implementazione della funzione schip -p -d -n/-l
         echo $output
       else
         if [[ $output == *"Toggle on/off from 0 to 1"* ]]; then 
-          cd /sys/class/gpio/gpio17
-          echo 1 >value
+          if [ $exist -eq 1 ]; then
+            cd /sys/class/gpio/gpio17
+            echo 1 >value
+          fi
           echo -n "switching OFF -> "
           text "bold" "" "ON"
           lastone=true
         elif [[ $output == *"Toggle on/off from 1 to 0"* ]]; then
-          cd /sys/class/gpio/gpio17
-          echo 0 >value
+          if [ $exist -eq 1 ]; then
+            cd /sys/class/gpio/gpio17
+            echo 0 >value
+          fi
           echo -n "switching ON -> "
           text "bold" "" "OFF"
           lastone=false
